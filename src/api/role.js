@@ -1,30 +1,32 @@
 import request from '@/utils/request'
 
-export function getRoutes() {
+export function fetchList(query) {
   return request({
-    url: '/vue-element-admin/routes',
-    method: 'get'
+    url: '/role/pagelist',
+    method: 'get',
+    params: query
   })
 }
 
-export function getRoles() {
+export function getRoles(params) {
   return request({
-    url: '/vue-element-admin/roles',
-    method: 'get'
+    url: '/role/list',
+    method: 'get',
+    params: params
   })
 }
 
 export function addRole(data) {
   return request({
-    url: '/vue-element-admin/role',
+    url: '/role',
     method: 'post',
     data
   })
 }
 
-export function updateRole(id, data) {
+export function updateRole(data) {
   return request({
-    url: `/vue-element-admin/role/${id}`,
+    url: '/role',
     method: 'put',
     data
   })
@@ -32,7 +34,7 @@ export function updateRole(id, data) {
 
 export function deleteRole(id) {
   return request({
-    url: `/vue-element-admin/role/${id}`,
+    url: `/role/${id}`,
     method: 'delete'
   })
 }

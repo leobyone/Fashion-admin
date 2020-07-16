@@ -38,3 +38,35 @@ export function fetchList(query) {
     params: query
   })
 }
+
+export function fetchUser(id) {
+  return request({
+    url: '/user',
+    method: 'get',
+    params: { id }
+  })
+}
+
+export function addUser(data) {
+  return request({
+    url: '/user/add',
+    method: 'post',
+    data
+  })
+}
+
+export function updateUser(data) {
+  return request({
+    url: '/user',
+    method: 'put',
+    data
+  })
+}
+
+export function deleteUser(id) {
+  return request({
+    url: `/user/${id}`,
+    method: 'delete',
+    params: { id }
+  })
+}

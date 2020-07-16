@@ -38,7 +38,7 @@ function hasPermission(roles, route) {
 export function filterAsyncRoutes(routers) {
   // 遍历后台传来的路由字符串，转换为组件对象
   let accessedRouters = routers.filter(router => {
-    if (router.meta) {
+    if (router.meta && router.pid == 0) {
       // 默认图标处理
       router.meta.icon = router.meta.icon ? router.meta.icon : "component";
     }
@@ -63,7 +63,7 @@ export function filterAsyncRoutes(routers) {
   return accessedRouters;
 }
 
-export function loadView (path) {
+export function loadView(path) {
   return function (resolve) {
     require([`@/views/${path}.vue`], resolve)
   }

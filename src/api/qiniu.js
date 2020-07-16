@@ -1,8 +1,11 @@
 import request from '@/utils/request'
 
-export function getToken() {
+export function uploadImg(params, conf) {
   return request({
-    url: '/qiniu/upload/token', // 假地址 自行替换
-    method: 'get'
+    url: 'upload/upload-image', 
+    method: 'post',
+    params,
+    conf
   })
 }
+

@@ -16,9 +16,9 @@
         </template>
       </el-table-column>
 
-      <el-table-column min-width="300px" label="LoginName">
+      <el-table-column min-width="200px" label="LoginName">
         <template slot-scope="{row}">
-          <router-link :to="'/user/edit/'+row.Id" class="link-type">
+          <router-link :to="'/system/user/edit/'+row.Id" class="link-type">
             <span>{{ row.LoginName }}</span>
           </router-link>
         </template>
@@ -60,11 +60,14 @@
         </template>
       </el-table-column>
 
-      <el-table-column align="center" label="Actions" width="120">
+      <el-table-column align="center" label="Actions" width="200">
         <template slot-scope="scope">
-          <router-link :to="'/user/edit/'+scope.row.Id">
-            <el-button type="primary" size="small" icon="el-icon-edit">Edit</el-button>
-          </router-link>
+          <el-button type="primary" size="small" icon="el-icon-edit" @click="handleEdit(scope.row)">
+            {{ $t('table.edit') }}
+          </el-button>
+          <el-button size="small" type="danger" @click="handleDelete(scope.row)">
+            {{ $t('table.delete') }}
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -75,7 +78,7 @@
 </template>
 
 <script>
-import { fetchList } from "@/api/user";
+import { fetchList, deleteUser } from "@/api/user";
 import util from "@/utils/util.js";
 import Pagination from "@/components/Pagination"; // Secondary package based on el-pagination
 
@@ -86,9 +89,8 @@ export default {
     // el-tag类型转换
     statusFilter(status) {
       const statusMap = {
-        2: "info",
-        4: "danger",
-        5: "success"
+        1: "success",
+        0: "danger",
       };
       return statusMap[status];
     },
@@ -181,7 +183,31 @@ export default {
       });
     },
     handleCreate() {
-      this.$router.push({ path: "/user/create", query: { id: 0 } });
+      this.$router.push({ path: "/system/user/create" });
+    },
+    handleEdit(row) {
+      this.$router.push({ path: `/system/user/edit/${row.Id}` });
+    },
+    handleDelete(row) {
+      deleteUser(row.Id).then(response => {
+        let { success, msg } = response.data;
+        if (success) {
+          this.$notify({
+            title: '提示',
+            message: '删除成功',
+            type: 'success',
+            duration: 2000
+          })
+          this.getList();
+        } else {
+          this.$notify({
+            title: '提示',
+            message: msg,
+            type: 'error',
+            duration: 2000
+          })
+        }
+      })
     },
     handleFilter() {
       this.listQuery.page = 1;

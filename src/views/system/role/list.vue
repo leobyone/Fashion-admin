@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="userName" :placeholder="$t('table.username')" style="width: 200px;" class="filter-item"
+      <el-input v-model="roleName" :placeholder="'角色名'" style="width: 200px;" class="filter-item"
         @keyup.enter.native="handleFilter" />
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         {{ $t('table.search') }}</el-button>
@@ -16,55 +16,34 @@
         </template>
       </el-table-column>
 
-      <el-table-column min-width="300px" label="LoginName">
+      <el-table-column min-width="300px" label="Name">
         <template slot-scope="{row}">
-          <router-link :to="'/user/edit/'+row.Id" class="link-type">
-            <span>{{ row.LoginName }}</span>
+          <router-link :to="'/system/role/edit/'+row.Id" class="link-type">
+            <span>{{ row.Name }}</span>
           </router-link>
         </template>
       </el-table-column>
 
-      <el-table-column width="120px" align="center" label="Sex">
+      <el-table-column class-name="status-col" label="Enabled" width="110">
         <template slot-scope="scope">
-          <el-tag :type="scope.row.Sex | sexFilter">{{ scope.row.Sex | formatSex }}</el-tag>
+          <el-tag :type="scope.row.Enabled | EnabledFilter">{{ scope.row.Enabled | formatEnabled }}</el-tag>
         </template>
       </el-table-column>
 
-      <el-table-column width="120px" align="center" label="Age">
+      <el-table-column width="120px" align="center" label="Description">
         <template slot-scope="scope">
-          <span>{{ scope.row.Age }}</span>
-        </template>
-      </el-table-column>
-
-      <el-table-column width="120px" align="center" label="Mobile">
-        <template slot-scope="scope">
-          <span>{{ scope.row.Mobile }}</span>
-        </template>
-      </el-table-column>
-
-      <el-table-column width="180px" align="center" label="Birthday">
-        <template slot-scope="scope">
-          <span>{{ scope.row.Birthday | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
-        </template>
-      </el-table-column>
-
-      <el-table-column width="120px" align="center" label="Address">
-        <template slot-scope="scope">
-          <span>{{ scope.row.Address }}</span>
-        </template>
-      </el-table-column>
-
-      <el-table-column class-name="status-col" label="Status" width="110">
-        <template slot-scope="scope">
-          <el-tag :type="scope.row.Status | statusFilter">{{ scope.row.Status | formatStatus }}</el-tag>
+          <span>{{ scope.row.Description }}</span>
         </template>
       </el-table-column>
 
       <el-table-column align="center" label="Actions" width="120">
         <template slot-scope="scope">
-          <router-link :to="'/user/edit/'+scope.row.Id">
-            <el-button type="primary" size="small" icon="el-icon-edit">Edit</el-button>
+          <router-link :to="'/system/user/edit/'+scope.row.Id">
+            <el-button type="primary" size="mini" icon="el-icon-edit">Edit</el-button>
           </router-link>
+          <el-button size="mini" type="danger" @click="handleDelete(scope.row)">
+            {{ $t('table.delete') }}
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -75,48 +54,29 @@
 </template>
 
 <script>
-import { fetchList } from "@/api/user";
+import { fetchList, deleteRole } from "@/api/role";
 import util from "@/utils/util.js";
 import Pagination from "@/components/Pagination"; // Secondary package based on el-pagination
 
 export default {
-  name: "UserList",
+  name: "RoleList",
   components: { Pagination },
   filters: {
     // el-tag类型转换
-    statusFilter(status) {
-      const statusMap = {
-        2: "info",
-        4: "danger",
-        5: "success"
-      };
-      return statusMap[status];
-    },
-    // el-tag类型转换
-    sexFilter(sex) {
-      const sexMap = {
+    enabledFilter(enabled) {
+      const enabledMap = {
         0: "danger",
-        1: "success",
-        2: "info"
+        1: "success"
       };
-      return sexMap[sex];
+      return enabledMap[enabled];
     },
     // 状态显示转换
-    formatStatus(status) {
-      const statusMap = {
+    formatEnabled(enabled) {
+      const enabledMap = {
         0: "禁用",
         1: "正常"
       };
-      return statusMap[status];
-    },
-    // 性别显示转换
-    formatSex(sex) {
-      const sexMap = {
-        0: "未知",
-        1: "男",
-        2: "女"
-      };
-      return sexMap[sex];
+      return enabledMap[enabled];
     }
   },
   data() {
@@ -124,7 +84,7 @@ export default {
       list: null,
       total: 0,
       listLoading: true,
-      userName: "",
+      roleName: "",
       listQuery: {
         page: 1,
         size: 20,
@@ -141,7 +101,7 @@ export default {
     };
   },
   watch: {
-    userName: function (newVal, oldVal) {
+    roleName: function (newVal, oldVal) {
       if (newVal != "") {
         let conditions = [
           {
@@ -151,7 +111,7 @@ export default {
             Value: false
           },
           {
-            Field: "UserName",
+            Field: "Name",
             DataType: util.query.dataType.str,
             Option: util.query.opt.eq,
             Value: newVal
@@ -181,7 +141,28 @@ export default {
       });
     },
     handleCreate() {
-      this.$router.push({ path: "/user/create", query: { id: 0 } });
+      this.$router.push({ path: "/system/role/create" });
+    },
+    handleDelete(row) {
+      deleteRole(row.Id).then(response => {
+        let { success, msg } = response.data;
+        if (success) {
+          this.$notify({
+            title: '提示',
+            message: '删除成功',
+            type: 'success',
+            duration: 2000
+          })
+          this.getList();
+        } else {
+          this.$notify({
+            title: '提示',
+            message: msg,
+            type: 'error',
+            duration: 2000
+          })
+        }
+      })
     },
     handleFilter() {
       this.listQuery.page = 1;
