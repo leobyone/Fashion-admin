@@ -49,7 +49,7 @@ export function fetchUser(id) {
 
 export function addUser(data) {
   return request({
-    url: '/user/add',
+    url: '/user',
     method: 'post',
     data
   })

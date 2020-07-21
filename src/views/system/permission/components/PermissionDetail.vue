@@ -8,12 +8,32 @@
       </sticky>
 
       <div class="createPost-main-container">
-        <el-form-item style="margin-bottom: 40px;" prop="Name" label="角色名">
-          <el-input v-model="postForm.Name" :maxlength="100" name="name" required></el-input>
+        <el-form-item style="margin-bottom: 40px;" prop="Name" label="菜单名">
+          <el-input v-model="postForm.Name" :maxlength="100" required></el-input>
+        </el-form-item>
+
+        <el-form-item style="margin-bottom: 40px;" prop="Path" label="路由">
+          <el-input v-model="postForm.Path" :maxlength="200"></el-input>
+        </el-form-item>
+
+        <el-form-item style="margin-bottom: 40px;" prop="Component" label="页面地址">
+          <el-input v-model="postForm.Component" :maxlength="200"></el-input>
+        </el-form-item>
+
+        <el-form-item style="margin-bottom: 40px;" prop="Redirect" label="跳转地址">
+          <el-input v-model="postForm.Redirect" :maxlength="200"></el-input>
         </el-form-item>
 
         <el-form-item prop="Enabled" label="是否启用">
           <el-switch v-model="postForm.Enabled"></el-switch>
+        </el-form-item>
+
+        <el-form-item prop="IsButton" label="是否按钮">
+          <el-switch v-model="postForm.IsButton"></el-switch>
+        </el-form-item>
+
+        <el-form-item prop="IsHide" label="是否隐藏">
+          <el-switch v-model="postForm.IsHide"></el-switch>
         </el-form-item>
 
         <el-form-item style="margin-bottom: 40px;" label="描述">
@@ -27,16 +47,22 @@
 
 <script>
 import Sticky from "@/components/Sticky"; // 粘性header组件
-import { fetchRole, addRole, updateRole } from "@/api/role";
+import { fetchPermission, addPermission, updatePermission } from "@/api/permission";
 
 const defaultForm = {
+  Id: 0,
   Name: "",
-  Enabled: false,
+  Path: "",
+  Component: "",
+  Redirect: "",
+  Enabled: true,
+  IsButton: false,
+  IsHide: false,
   Description: ""
 };
 
 export default {
-  name: "RoleDetail",
+  name: "PermissionDetail",
   components: {
     Sticky
   },
@@ -53,7 +79,7 @@ export default {
       loading: false,
       rules: {
         Name: [
-          { required: true, message: "请输入角色名", trigger: "blur" }
+          { required: true, message: "请输入菜单名", trigger: "blur" }
         ]
       },
       tempRoute: {}
@@ -77,7 +103,7 @@ export default {
   },
   methods: {
     fetchData(id) {
-      fetchRole(id).then(response => {
+      fetchPermission(id).then(response => {
         this.postForm = response.data.data;
 
         // set tagsview title
@@ -89,14 +115,14 @@ export default {
       });
     },
     setTagsViewTitle() {
-      const title = this.lang === "zh" ? "编辑角色" : "Edit Role";
+      const title = this.lang === "zh" ? "编辑菜单" : "Edit Permission";
       const route = Object.assign({}, this.tempRoute, {
         title: `${title}-${this.postForm.Id}`
       });
       this.$store.dispatch("tagsView/updateVisitedView", route);
     },
     setPageTitle() {
-      const title = "Edit Role";
+      const title = "Edit Permission";
       document.title = `${title} - ${this.postForm.Id}`;
     },
     submitForm() {
@@ -106,12 +132,12 @@ export default {
         if (valid) {
           that.loading = true;
           if (that.isEdit) {
-            updateRole(that.postForm).then(response => {
+            updatePermission(that.postForm).then(response => {
               let { success, msg } = response.data;
               if (success) {
                 that.$notify({
                   title: "提示",
-                  message: "更新角色成功",
+                  message: "更新菜单成功",
                   type: "success",
                   duration: 2000
                 });
@@ -128,12 +154,12 @@ export default {
               }
             });
           } else {
-            addRole(that.postForm).then(response => {
+            addPermission(this.postForm).then(response => {
               let { success, msg } = response.data;
               if (success) {
                 that.$notify({
                   title: "提示",
-                  message: "新增角色成功",
+                  message: "新增菜单成功",
                   type: "success",
                   duration: 2000
                 });
@@ -143,14 +169,14 @@ export default {
               } else {
                 that.$notify({
                   title: "提示",
-                  message: "新增角色失败",
+                  message: "新增菜单失败",
                   type: "error",
                   duration: 2000
                 });
               }
             });
           }
-          that.loading = false;
+          this.loading = false;
         } else {
           console.log("error submit!!");
           return false;
@@ -158,7 +184,7 @@ export default {
       });
     },
     goBack() {
-      this.$router.push({ path: "/system/role/list" });
+      this.$router.push({ path: "/system/permission/list" });
     }
   }
 };

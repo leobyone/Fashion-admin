@@ -3,7 +3,8 @@
     <div class="filter-container">
       <el-input v-model="roleName" :placeholder="'角色名'" style="width: 200px;" class="filter-item"
         @keyup.enter.native="handleFilter" />
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+      <el-button class="filter-item" type="primary" icon="el-icon-search" style="margin-left:10px;"
+        @click="handleFilter">
         {{ $t('table.search') }}</el-button>
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit"
         @click="handleCreate">{{ $t('table.add') }}</el-button>
@@ -16,7 +17,7 @@
         </template>
       </el-table-column>
 
-      <el-table-column min-width="300px" label="Name">
+      <el-table-column min-width="200px" label="Name">
         <template slot-scope="{row}">
           <router-link :to="'/system/role/edit/'+row.Id" class="link-type">
             <span>{{ row.Name }}</span>
@@ -26,7 +27,7 @@
 
       <el-table-column class-name="status-col" label="Enabled" width="110">
         <template slot-scope="scope">
-          <el-tag :type="scope.row.Enabled | EnabledFilter">{{ scope.row.Enabled | formatEnabled }}</el-tag>
+          <el-tag :type="scope.row.Enabled ? 'success' : 'danger'">{{ scope.row.Enabled ? '正常' : '禁用' }}</el-tag>
         </template>
       </el-table-column>
 
@@ -36,12 +37,17 @@
         </template>
       </el-table-column>
 
-      <el-table-column align="center" label="Actions" width="120">
+      <el-table-column align="center" label="Actions" width="300">
         <template slot-scope="scope">
-          <router-link :to="'/system/user/edit/'+scope.row.Id">
-            <el-button type="primary" size="mini" icon="el-icon-edit">Edit</el-button>
+          <router-link :to="'/system/role/edit/'+scope.row.Id">
+            <el-button type="primary" size="small" icon="el-icon-edit">{{ $t('table.edit') }}</el-button>
           </router-link>
-          <el-button size="mini" type="danger" @click="handleDelete(scope.row)">
+          <router-link :to="'/system/role/assign/'+scope.row.Id">
+            <el-button type="warning" size="small" icon="el-icon-share" style="margin-left: 5px;">
+              {{ $t('table.assign') }}</el-button>
+          </router-link>
+          <el-button size="small" type="danger" icon="el-icon-delete" style="margin-left: 5px;"
+            @click="handleDelete(scope.row)">
             {{ $t('table.delete') }}
           </el-button>
         </template>
@@ -62,22 +68,6 @@ export default {
   name: "RoleList",
   components: { Pagination },
   filters: {
-    // el-tag类型转换
-    enabledFilter(enabled) {
-      const enabledMap = {
-        0: "danger",
-        1: "success"
-      };
-      return enabledMap[enabled];
-    },
-    // 状态显示转换
-    formatEnabled(enabled) {
-      const enabledMap = {
-        0: "禁用",
-        1: "正常"
-      };
-      return enabledMap[enabled];
-    }
   },
   data() {
     return {
@@ -102,24 +92,26 @@ export default {
   },
   watch: {
     roleName: function (newVal, oldVal) {
-      if (newVal != "") {
-        let conditions = [
-          {
-            Field: "IsDeleted",
-            DataType: util.query.dataType.boolean,
-            Option: util.query.opt.eq,
-            Value: false
-          },
-          {
-            Field: "Name",
-            DataType: util.query.dataType.str,
-            Option: util.query.opt.eq,
-            Value: newVal
-          }
-        ];
+      let conditions = [{
+        Field: "IsDeleted",
+        DataType: util.query.dataType.boolean,
+        Option: util.query.opt.eq,
+        Value: false
+      }];
 
+      if (newVal != "") {
+        conditions.push({
+          Field: "Name",
+          DataType: util.query.dataType.string,
+          Option: util.query.opt.like,
+          Value: newVal
+        });
+        this.listQuery.conditions = util.query.convert(conditions);
+      } else {
         this.listQuery.conditions = util.query.convert(conditions);
       }
+
+      this.getList();
     }
   },
   created() {

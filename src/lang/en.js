@@ -119,6 +119,7 @@ export default {
     remark: 'Remark',
     search: 'Search',
     add: 'Add',
+    assign: 'Assign',
     export: 'Export',
     reviewer: 'reviewer',
     id: 'ID',
@@ -171,5 +172,11 @@ export default {
     tagsView: 'Open Tags-View',
     fixedHeader: 'Fixed Header',
     sidebarLogo: 'Sidebar Logo'
+  },
+  system: {
+    systemManage: 'System Manage',
+    userManage: 'User Manage',
+    roleManage: 'Role Manage',
+    permissionManage: 'Permission Manage'
   }
 }

@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="userName" :placeholder="$t('table.username')" style="width: 200px;" class="filter-item"
+      <el-input v-model="permissionName" :placeholder="'菜单名'" style="width: 200px;" class="filter-item"
         @keyup.enter.native="handleFilter" />
       <el-button class="filter-item" type="primary" icon="el-icon-search" style="margin-left:10px;"
         @click="handleFilter">
@@ -10,63 +10,77 @@
         @click="handleCreate">{{ $t('table.add') }}</el-button>
     </div>
 
-    <el-table v-loading="listLoading" :data="list" border fit highlight-current-row style="width: 100%">
-      <el-table-column align="center" label="ID" width="80">
+    <el-table v-loading="listLoading" :data="list" border fit highlight-current-row style="width: 100%" lazy
+      :load="load" row-key="Id" :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
+      @current-change="handleSelect">
+      <el-table-column align="center" label="ID" width="120">
         <template slot-scope="scope">
           <span>{{ scope.row.Id }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column min-width="200px" label="LoginName">
+      <el-table-column align="center" label="Name">
         <template slot-scope="{row}">
-          <router-link :to="'/system/user/edit/'+row.Id" class="link-type">
-            <span>{{ row.LoginName }}</span>
+          <router-link :to="'/system/permission/edit/'+row.Id" class="link-type">
+            <i class="fa" :class="row.Icon"></i>
+            <span>{{ row.Name }}</span>
           </router-link>
         </template>
       </el-table-column>
 
-      <el-table-column width="120px" align="center" label="Sex">
+      <el-table-column label="路由">
         <template slot-scope="scope">
-          <el-tag :type="scope.row.Sex | sexFilter">{{ scope.row.Sex | formatSex }}</el-tag>
+          <span>{{ scope.row.Path }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column width="120px" align="center" label="Age">
+      <el-table-column label="页面地址">
         <template slot-scope="scope">
-          <span>{{ scope.row.Age }}</span>
+          <span>{{ scope.row.Component }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column width="120px" align="center" label="Mobile">
+      <el-table-column label="跳转地址">
         <template slot-scope="scope">
-          <span>{{ scope.row.Mobile }}</span>
+          <span>{{ scope.row.Redirect }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column width="180px" align="center" label="Birthday">
+      <el-table-column align="center" :label="'是否启用'">
         <template slot-scope="scope">
-          <span>{{ scope.row.Birthday | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+          <el-tag :type="scope.row.Enabled ? 'success' : 'danger'">
+            {{scope.row.Enabled ? '是' : '否'}}</el-tag>
         </template>
       </el-table-column>
 
-      <el-table-column width="120px" align="center" label="Address">
+      <el-table-column align="center" label="是否按钮">
         <template slot-scope="scope">
-          <span>{{ scope.row.Address }}</span>
+          <el-tag :type="!scope.row.IsButton  ? 'success' : 'danger'" disable-transitions>
+            {{!scope.row.IsButton ? "否" : "是"}}
+          </el-tag>
         </template>
       </el-table-column>
 
-      <el-table-column class-name="status-col" label="Status" width="110">
+      <el-table-column align="center" label="是否隐藏">
         <template slot-scope="scope">
-          <el-tag :type="scope.row.Status | statusFilter">{{ scope.row.Status | formatStatus }}</el-tag>
+          <el-tag :type="!scope.row.IsHide  ? 'success' : 'danger'" disable-transitions>
+            {{!scope.row.IsHide ? "否" : "是"}}
+          </el-tag>
+        </template>
+      </el-table-column>
+
+      <el-table-column label="描述">
+        <template slot-scope="scope">
+          <span>{{ scope.row.Description }}</span>
         </template>
       </el-table-column>
 
       <el-table-column align="center" label="Actions" width="200">
         <template slot-scope="scope">
-          <el-button type="primary" size="small" icon="el-icon-edit" @click="handleEdit(scope.row)">
-            {{ $t('table.edit') }}
-          </el-button>
-          <el-button size="small" type="danger" icon="el-icon-delete" style="margin-left: 5px;"
+          <router-link :to="'/system/permission/edit/'+scope.row.Id">
+            <el-button type="primary" size="mini" icon="el-icon-edit">{{ $t('table.edit') }}</el-button>
+          </router-link>
+          <el-button size="mini" type="danger" icon="el-icon-delete" style="margin-left: 5px;"
             @click="handleDelete(scope.row)">
             {{ $t('table.delete') }}
           </el-button>
@@ -80,61 +94,31 @@
 </template>
 
 <script>
-import { fetchList, deleteUser } from "@/api/user";
+import { fetchList, getPermissionTree, deletePermission } from "@/api/permission";
 import util from "@/utils/util.js";
 import Pagination from "@/components/Pagination"; // Secondary package based on el-pagination
 
 export default {
-  name: "UserList",
+  name: "PermissionList",
   components: { Pagination },
-  filters: {
-    // el-tag类型转换
-    statusFilter(status) {
-      const statusMap = {
-        1: "success",
-        0: "danger",
-      };
-      return statusMap[status];
-    },
-    // el-tag类型转换
-    sexFilter(sex) {
-      const sexMap = {
-        0: "danger",
-        1: "success",
-        2: "info"
-      };
-      return sexMap[sex];
-    },
-    // 状态显示转换
-    formatStatus(status) {
-      const statusMap = {
-        0: "禁用",
-        1: "正常"
-      };
-      return statusMap[status];
-    },
-    // 性别显示转换
-    formatSex(sex) {
-      const sexMap = {
-        0: "未知",
-        1: "男",
-        2: "女"
-      };
-      return sexMap[sex];
-    }
-  },
   data() {
     return {
       list: null,
       total: 0,
       listLoading: true,
-      userName: "",
+      permissionName: "",
+      selectedRow: {},
       listQuery: {
         page: 1,
         size: 20,
         sorts: util.query.convert([{ Field: "CreationTime", SortBy: 1 }]),
         conditions: util.query.convert([
           {
+            Field: "ParentId",
+            DataType: util.query.dataType.int,
+            Option: util.query.opt.eq,
+            Value: 0
+          }, {
             Field: "IsDeleted",
             DataType: util.query.dataType.boolean,
             Option: util.query.opt.eq,
@@ -145,8 +129,13 @@ export default {
     };
   },
   watch: {
-    userName: function (newVal, oldVal) {
+    permissionName: function (newVal, oldVal) {
       let conditions = [{
+        Field: "ParentId",
+        DataType: util.query.dataType.int,
+        Option: util.query.opt.eq,
+        Value: 0
+      }, {
         Field: "IsDeleted",
         DataType: util.query.dataType.boolean,
         Option: util.query.opt.eq,
@@ -155,7 +144,7 @@ export default {
 
       if (newVal != "") {
         conditions.push({
-          Field: "LoginName",
+          Field: "Name",
           DataType: util.query.dataType.string,
           Option: util.query.opt.like,
           Value: newVal
@@ -186,14 +175,16 @@ export default {
         this.listLoading = false;
       });
     },
-    handleCreate() {
-      this.$router.push({ path: "/system/user/create" });
+    load(tree, treeNode, resolve) {
+      getPermissionTree({ parentId: tree.Id }).then((res) => {
+        resolve(res.data.data);
+      });
     },
-    handleEdit(row) {
-      this.$router.push({ path: `/system/user/edit/${row.Id}` });
+    handleCreate() {
+      this.$router.push({ path: "/system/permission/create" });
     },
     handleDelete(row) {
-      deleteUser(row.Id).then(response => {
+      deletePermission(row.Id).then(response => {
         let { success, msg } = response.data;
         if (success) {
           this.$notify({
@@ -214,11 +205,13 @@ export default {
       })
     },
     handleFilter() {
-      debugger
       this.listQuery.page = 1;
       this.getList();
     }
-  }
+  },
+  handleSelect(val) {
+    this.selectedRow = val
+  },
 };
 </script>
 

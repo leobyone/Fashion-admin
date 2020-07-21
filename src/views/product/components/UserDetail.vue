@@ -1,7 +1,7 @@
 <template>
   <div class="createPost-container" v-loading="loading">
     <el-form ref="postForm" :model="postForm" :rules="rules" label-width="100px" class="form-container">
-      <sticky :z-index="10" :class-name="'sub-navbar success'">
+      <sticky :z-index="10" :class-name="'sub-navbar '+ postForm.Status">
         <el-button style="margin-left: 10px;" type="success" size="small" @click="submitForm">提交
         </el-button>
         <el-button size="small" type="warning" @click="goBack">返回</el-button>
@@ -67,7 +67,6 @@ import Sticky from "@/components/Sticky"; // 粘性header组件
 import { validURL } from "@/utils/validate";
 import { fetchUser, addUser, updateUser } from "@/api/user";
 import { getRoles } from "@/api/role";
-import util from "@/utils/util.js";
 
 const defaultForm = {
   LoginName: "",
@@ -145,13 +144,7 @@ export default {
       });
     },
     getRoles() {
-      let conditions = [{
-        Field: "IsDeleted",
-        DataType: util.query.dataType.boolean,
-        Option: util.query.opt.eq,
-        Value: false
-      }];
-      getRoles({ conditions: util.query.convert(conditions), sorts: [] }).then(response => {
+      getRoles({}).then(response => {
         let { success, data } = response.data;
         if (success) {
           this.roleList = data.map(t => {

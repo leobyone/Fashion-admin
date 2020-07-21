@@ -120,6 +120,7 @@ export default {
     search: '搜索',
     add: '添加',
     export: '导出',
+    assign: '授权',
     reviewer: '审核人',
     id: '序号',
     date: '时间',
@@ -171,5 +172,11 @@ export default {
     tagsView: '开启 Tags-View',
     fixedHeader: '固定 Header',
     sidebarLogo: '侧边栏 Logo'
+  },
+  system: {
+    systemManage: '系统管理',
+    userManage: '用户管理',
+    roleManage: '角色管理',
+    permissionManage: '权限管理'
   }
 }

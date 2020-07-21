@@ -8,11 +8,11 @@ export function fetchList(query) {
   })
 }
 
-export function getRoles(params) {
+export function getRoles(query) {
   return request({
     url: '/role/list',
     method: 'get',
-    params: params
+    params: query
   })
 }
 
