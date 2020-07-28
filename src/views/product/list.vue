@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="userName" :placeholder="$t('table.username')" style="width: 200px;" class="filter-item"
+      <el-input v-model="productName" :placeholder="$t('table.productname')" style="width: 200px;" class="filter-item"
         @keyup.enter.native="handleFilter" />
       <el-button class="filter-item" type="primary" icon="el-icon-search" style="margin-left:10px;"
         @click="handleFilter">
@@ -17,52 +17,61 @@
         </template>
       </el-table-column>
 
-      <el-table-column min-width="200px" label="LoginName">
-        <template slot-scope="{row}">
-          <router-link :to="'/system/user/edit/'+row.Id" class="link-type">
-            <span>{{ row.LoginName }}</span>
+      <el-table-column label="Name">
+        <template slot-scope="scope">
+          <router-link :to="'/product/edit/'+scope.row.Id" class="link-type">
+            <span>{{ scope.row.Name }}</span>
           </router-link>
         </template>
       </el-table-column>
 
-      <el-table-column width="120px" align="center" label="Sex">
+      <el-table-column label="ShowImg">
         <template slot-scope="scope">
-          <el-tag :type="scope.row.Sex | sexFilter">{{ scope.row.Sex | formatSex }}</el-tag>
+          <el-image style="height: 80px" :src="scope.row.ShowImg" :fit="'fill'"></el-image>
         </template>
       </el-table-column>
 
-      <el-table-column width="120px" align="center" label="Age">
+      <el-table-column label="PSN">
         <template slot-scope="scope">
-          <span>{{ scope.row.Age }}</span>
+          <span>{{ scope.row.PSN }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column width="120px" align="center" label="Mobile">
+      <el-table-column label="BrandName">
         <template slot-scope="scope">
-          <span>{{ scope.row.Mobile }}</span>
+          <span>{{ scope.row.BrandName }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column width="180px" align="center" label="Birthday">
+      <el-table-column label="Label">
         <template slot-scope="scope">
-          <span>{{ scope.row.Birthday | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+          <el-switch v-model="scope.row.IsNew" active-text="新品" inactive-text="" @change="handleChangeIsNew">
+          </el-switch>
+          <el-switch v-model="scope.row.IsHot" active-text="热销" inactive-text="" @change="handleChangeIsHot">
+          </el-switch>
         </template>
       </el-table-column>
 
-      <el-table-column width="120px" align="center" label="Address">
-        <template slot-scope="scope">
-          <span>{{ scope.row.Address }}</span>
-        </template>
-      </el-table-column>
-
-      <el-table-column class-name="status-col" label="Status" width="110">
+      <el-table-column width="120px" align="center" label="IsShelve">
         <template slot-scope="scope">
           <el-tag :type="scope.row.Status | statusFilter">{{ scope.row.Status | formatStatus }}</el-tag>
         </template>
       </el-table-column>
 
+      <el-table-column width="120px" align="center" label="OrderSort">
+        <template slot-scope="scope">
+          <span>{{ scope.row.OrderSort }}</span>
+        </template>
+      </el-table-column>
+
       <el-table-column align="center" label="Actions" width="200">
         <template slot-scope="scope">
+          <el-button type="primary" size="small" icon="el-icon-edit" @click="handleShelve(scope.row)">
+            {{ $t('table.shelve') }}
+          </el-button>
+          <el-button type="primary" size="small" icon="el-icon-edit" @click="handleUnShelve(scope.row)">
+            {{ $t('table.unshelve') }}
+          </el-button>
           <el-button type="primary" size="small" icon="el-icon-edit" @click="handleEdit(scope.row)">
             {{ $t('table.edit') }}
           </el-button>
@@ -80,47 +89,31 @@
 </template>
 
 <script>
-import { fetchList, deleteUser } from "@/api/user";
+import { fetchList, deleteProduct } from "@/api/product";
 import util from "@/utils/util.js";
 import Pagination from "@/components/Pagination"; // Secondary package based on el-pagination
 
 export default {
-  name: "UserList",
+  name: "ProductList",
   components: { Pagination },
   filters: {
     // el-tag类型转换
     statusFilter(status) {
       const statusMap = {
+        0: "info",
         1: "success",
-        0: "danger",
+        2: "danger"
       };
       return statusMap[status];
-    },
-    // el-tag类型转换
-    sexFilter(sex) {
-      const sexMap = {
-        0: "danger",
-        1: "success",
-        2: "info"
-      };
-      return sexMap[sex];
     },
     // 状态显示转换
     formatStatus(status) {
       const statusMap = {
-        0: "禁用",
-        1: "正常"
+        0: "草稿",
+        1: "上架",
+        2: "下架"
       };
       return statusMap[status];
-    },
-    // 性别显示转换
-    formatSex(sex) {
-      const sexMap = {
-        0: "未知",
-        1: "男",
-        2: "女"
-      };
-      return sexMap[sex];
     }
   },
   data() {
@@ -128,7 +121,7 @@ export default {
       list: null,
       total: 0,
       listLoading: true,
-      userName: "",
+      productName: "",
       listQuery: {
         page: 1,
         size: 20,
@@ -145,7 +138,7 @@ export default {
     };
   },
   watch: {
-    userName: function (newVal, oldVal) {
+    productName: function (newVal, oldVal) {
       let conditions = [{
         Field: "IsDeleted",
         DataType: util.query.dataType.boolean,
@@ -155,7 +148,7 @@ export default {
 
       if (newVal != "") {
         conditions.push({
-          Field: "LoginName",
+          Field: "Name",
           DataType: util.query.dataType.string,
           Option: util.query.opt.like,
           Value: newVal
@@ -187,13 +180,13 @@ export default {
       });
     },
     handleCreate() {
-      this.$router.push({ path: "/system/user/create" });
+      this.$router.push({ path: "/product/create" });
     },
     handleEdit(row) {
-      this.$router.push({ path: `/system/user/edit/${row.Id}` });
+      this.$router.push({ path: `/product/edit/${row.Id}` });
     },
     handleDelete(row) {
-      deleteUser(row.Id).then(response => {
+      deleteProduct(row.Id).then(response => {
         let { success, msg } = response.data;
         if (success) {
           this.$notify({
@@ -214,7 +207,6 @@ export default {
       })
     },
     handleFilter() {
-      debugger
       this.listQuery.page = 1;
       this.getList();
     }
@@ -222,13 +214,3 @@ export default {
 };
 </script>
 
-<style scoped>
-.edit-input {
-  padding-right: 100px;
-}
-.cancel-btn {
-  position: absolute;
-  right: 15px;
-  top: 10px;
-}
-</style>
