@@ -1,29 +1,23 @@
 <template>
   <div class="createPost-container" v-loading="loading">
     <el-form ref="postForm" :model="postForm" :rules="rules" label-width="100px" class="form-container">
-      <sticky :z-index="10" :class-name="'sub-navbar '+ postForm.Status">
+      <sticky :z-index="10" :class-name="'sub-navbar ' + (postForm.ID > 0 ? 'success' : 'error')">
         <el-button style="margin-left: 10px;" type="success" size="small" @click="submitForm">提交
         </el-button>
         <el-button size="small" type="warning" @click="goBack">返回</el-button>
       </sticky>
 
       <div class="createPost-main-container">
-        <el-form-item style="margin-bottom: 40px;" prop="LoginName" label="登录名">
+        <el-form-item style="margin-bottom: 40px;" prop="LoginName" label="商品名称">
           <el-input v-model="postForm.LoginName" :maxlength="100" name="name" required></el-input>
         </el-form-item>
 
-        <el-form-item prop="Avatar" style="margin-bottom: 30px;" label="头像">
-          <Upload v-model="postForm.Avatar" />
-        </el-form-item>
-
-        <el-form-item prop="Password" label="密码" v-if="!isEdit">
-          <el-input v-model="postForm.Password" show-password auto-complete="off"></el-input>
-        </el-form-item>
-
-        <el-form-item prop="RoleIds" label="用户角色">
-          <el-select v-model="roleIds" multiple placeholder="请选择">
+        <el-form-item prop="CategoryId" label="商品分类">
+          <el-select v-model="categoryIds" placeholder="请选择">
             <el-option v-for="item in roleList" :key="item.value" :label="item.label" :value="item.value"></el-option>
           </el-select>
+          <el-cascader v-model="value" :options="options" :props="{ expandTrigger: 'hover' }" @change="handleChange">
+          </el-cascader>
         </el-form-item>
 
         <el-form-item prop="RealName" label="真实姓名">

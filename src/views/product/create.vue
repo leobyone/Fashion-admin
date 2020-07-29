@@ -1,12 +1,13 @@
 <template>
-  <user-detail :is-edit="false" />
+  <product-detail :is-edit="false" />
 </template>
 
 <script>
-import UserDetail from './components/UserDetail'
+import ProductDetail from './components/ProductDetail'
 
 export default {
-  name: 'CreateUser',
-  components: { UserDetail }
+  name: 'EditProduct',
+  components: { ProductDetail }
 }
 </script>
+

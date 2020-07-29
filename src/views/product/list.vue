@@ -45,9 +45,9 @@
 
       <el-table-column label="Label">
         <template slot-scope="scope">
-          <el-switch v-model="scope.row.IsNew" active-text="新品" inactive-text="" @change="handleChangeIsNew">
+          <el-switch v-model="scope.row.IsNew" active-text="新品" inactive-text="" @change="handleChangeIsNew(scope.row)">
           </el-switch>
-          <el-switch v-model="scope.row.IsHot" active-text="热销" inactive-text="" @change="handleChangeIsHot">
+          <el-switch v-model="scope.row.IsHot" active-text="热销" inactive-text="" @change="handleChangeIsHot(scope.row)">
           </el-switch>
         </template>
       </el-table-column>
@@ -89,7 +89,7 @@
 </template>
 
 <script>
-import { fetchList, deleteProduct } from "@/api/product";
+import { fetchList, deleteProduct, updateProduct } from "@/api/product";
 import util from "@/utils/util.js";
 import Pagination from "@/components/Pagination"; // Secondary package based on el-pagination
 
@@ -205,6 +205,54 @@ export default {
           })
         }
       })
+    },
+    handleChangeIsNew(row) {
+      let that = this;
+      let postForm = row;
+      postForm.IsNew = !row.IsNew;
+
+      updateProduct(postForm).then(response => {
+        let { success, msg } = response.data;
+        if (!success) {
+          that.$notify({
+            title: "提示",
+            message: msg,
+            type: "error",
+            duration: 2000
+          });
+        }
+      }).catch(() => {
+        that.$notify({
+          title: "提示",
+          message: "更新失败",
+          type: "error",
+          duration: 2000
+        });
+      });
+    },
+    handleChangeIsHot(row) {
+      let that = this;
+      let postForm = row;
+      postForm.IsHot = !row.IsHot;
+
+      updateProduct(postForm).then(response => {
+        let { success, msg } = response.data;
+        if (!success) {
+          that.$notify({
+            title: "提示",
+            message: msg,
+            type: "error",
+            duration: 2000
+          });
+        }
+      }).catch(() => {
+        that.$notify({
+          title: "提示",
+          message: "更新失败",
+          type: "error",
+          duration: 2000
+        });
+      });
     },
     handleFilter() {
       this.listQuery.page = 1;
