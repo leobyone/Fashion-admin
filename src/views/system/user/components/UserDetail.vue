@@ -1,9 +1,14 @@
 <template>
   <div class="createPost-container" v-loading="loading">
-    <el-form ref="postForm" :model="postForm" :rules="rules" label-width="100px" class="form-container">
+    <el-form
+      ref="postForm"
+      :model="postForm"
+      :rules="rules"
+      label-width="100px"
+      class="form-container"
+    >
       <sticky :z-index="10" :class-name="'sub-navbar success'">
-        <el-button style="margin-left: 10px;" type="success" size="small" @click="submitForm">提交
-        </el-button>
+        <el-button style="margin-left: 10px;" type="success" size="small" @click="submitForm">提交</el-button>
         <el-button size="small" type="warning" @click="goBack">返回</el-button>
       </sticky>
 
@@ -22,7 +27,12 @@
 
         <el-form-item prop="RoleIds" label="用户角色">
           <el-select v-model="roleIds" multiple placeholder="请选择">
-            <el-option v-for="item in roleList" :key="item.value" :label="item.label" :value="item.value"></el-option>
+            <el-option
+              v-for="item in roleList"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            ></el-option>
           </el-select>
         </el-form-item>
 
@@ -42,7 +52,12 @@
         </el-form-item>
 
         <el-form-item prop="Birthday" label="出生日期">
-          <el-date-picker v-model="postForm.Birthday" type="date" format="yyyy-MM-dd" placeholder="选择日期" />
+          <el-date-picker
+            v-model="postForm.Birthday"
+            type="date"
+            format="yyyy-MM-dd"
+            placeholder="选择日期"
+          />
         </el-form-item>
 
         <el-form-item prop="Address" label="现在住址">
@@ -54,7 +69,12 @@
         </el-form-item>
 
         <el-form-item style="margin-bottom: 40px;" label="备注">
-          <el-input v-model="postForm.Remark" :rows="3" type="textarea" placeholder="Please enter the remark" />
+          <el-input
+            v-model="postForm.Remark"
+            :rows="3"
+            type="textarea"
+            placeholder="Please enter the remark"
+          />
         </el-form-item>
       </div>
     </el-form>
@@ -96,10 +116,10 @@ export default {
   },
   data() {
     return {
-      title: '',
+      title: "",
       postForm: Object.assign({}, defaultForm),
       loading: false,
-      roleIds: '',
+      roleIds: "",
       roleList: [],
       status: 0,
       rules: {
@@ -128,42 +148,49 @@ export default {
   },
   methods: {
     fetchData(id) {
-      fetchUser(id).then(response => {
-        this.postForm = response.data.data;
-        this.status = this.postForm.Status == 0 ? false : true;
-        if (this.postForm.RoleIds) {
-          this.roleIds = this.postForm.RoleIds.split(',').map(t => {
-            return parseInt(t);
-          })
-        }
-        // set tagsview title
-        this.setTagsViewTitle();
-        // set page title
-        this.setPageTitle();
-      }).catch(err => {
-        console.log(err);
-      });
+      fetchUser(id)
+        .then(response => {
+          this.postForm = response.data.data;
+          this.status = this.postForm.Status == 0 ? false : true;
+          if (this.postForm.RoleIds) {
+            this.roleIds = this.postForm.RoleIds.split(",").map(t => {
+              return parseInt(t);
+            });
+          }
+          // set tagsview title
+          this.setTagsViewTitle();
+          // set page title
+          this.setPageTitle();
+        })
+        .catch(err => {
+          console.log(err);
+        });
     },
     getRoles() {
-      let conditions = [{
-        Field: "IsDeleted",
-        DataType: util.query.dataType.boolean,
-        Option: util.query.opt.eq,
-        Value: false
-      }];
-      getRoles({ conditions: util.query.convert(conditions), sorts: [] }).then(response => {
+      let conditions = [
+        {
+          Field: "IsDeleted",
+          DataType: util.query.dataType.boolean,
+          Option: util.query.opt.eq,
+          Value: false
+        }
+      ];
+      getRoles({
+        conditions: util.query.convert(conditions),
+        sorts: util.query.convert([])
+      }).then(response => {
         let { success, data } = response.data;
         if (success) {
           this.roleList = data.map(t => {
             return {
               value: t.Id,
               label: t.Name
-            }
+            };
           });
         } else {
-          this.$message({ message: '加载角色列表失败', type: 'error' });
+          this.$message({ message: "加载角色列表失败", type: "error" });
         }
-      })
+      });
     },
     setTagsViewTitle() {
       const title = this.lang === "zh" ? "编辑用户" : "Edit User";
@@ -183,65 +210,69 @@ export default {
         if (valid) {
           that.loading = true;
           if (that.isEdit) {
-            updateUser(that.postForm).then(response => {
-              let { success, msg } = response.data;
-              if (success) {
-                that.$notify({
-                  title: "提示",
-                  message: "更新用户成功",
-                  type: "success",
-                  duration: 2000
-                });
+            updateUser(that.postForm)
+              .then(response => {
+                let { success, msg } = response.data;
+                if (success) {
+                  that.$notify({
+                    title: "提示",
+                    message: "更新用户成功",
+                    type: "success",
+                    duration: 2000
+                  });
 
-                setTimeout(function () {
-                  that.goBack();
-                }, 2000);
-              } else {
+                  setTimeout(function() {
+                    that.goBack();
+                  }, 2000);
+                } else {
+                  that.$notify({
+                    title: "提示",
+                    message: msg,
+                    type: "error",
+                    duration: 2000
+                  });
+                }
+              })
+              .catch(() => {
                 that.$notify({
                   title: "提示",
-                  message: msg,
+                  message: "更新用户失败",
                   type: "error",
                   duration: 2000
                 });
-              }
-            }).catch(() => {
-              that.$notify({
-                title: "提示",
-                message: "更新用户失败",
-                type: "error",
-                duration: 2000
               });
-            });
           } else {
-            addUser(that.postForm).then(response => {
-              let { success, msg } = response.data;
-              if (success) {
-                that.$notify({
-                  title: "提示",
-                  message: "新增用户成功",
-                  type: "success",
-                  duration: 2000
-                });
+            addUser(that.postForm)
+              .then(response => {
+                let { success, msg } = response.data;
+                if (success) {
+                  that.$notify({
+                    title: "提示",
+                    message: "新增用户成功",
+                    type: "success",
+                    duration: 2000
+                  });
 
-                setTimeout(function () {
-                  that.goBack();
-                }, 2000);
-              } else {
+                  setTimeout(function() {
+                    that.goBack();
+                  }, 2000);
+                } else {
+                  that.$notify({
+                    title: "提示",
+                    message: msg,
+                    type: "error",
+                    duration: 2000
+                  });
+                }
+              })
+              .catch(() => {
                 that.$notify({
                   title: "提示",
-                  message: msg,
+                  message: "新增用户失败",
                   type: "error",
                   duration: 2000
                 });
-              }
-            }).catch(() => {
-              that.$notify({
-                title: "提示",
-                message: "新增用户失败",
-                type: "error",
-                duration: 2000
               });
-            });
           }
           that.loading = false;
         } else {

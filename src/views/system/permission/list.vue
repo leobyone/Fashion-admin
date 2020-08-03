@@ -1,18 +1,42 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="permissionName" :placeholder="'菜单名'" style="width: 200px;" class="filter-item"
-        @keyup.enter.native="handleFilter" />
-      <el-button class="filter-item" type="primary" icon="el-icon-search" style="margin-left:10px;"
-        @click="handleFilter">
-        {{ $t('table.search') }}</el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit"
-        @click="handleCreate">{{ $t('table.add') }}</el-button>
+      <el-input
+        v-model="permissionName"
+        :placeholder="'菜单名'"
+        style="width: 200px;"
+        class="filter-item"
+        @keyup.enter.native="handleFilter"
+      />
+      <el-button
+        class="filter-item"
+        type="primary"
+        icon="el-icon-search"
+        style="margin-left:10px;"
+        @click="handleFilter"
+      >{{ $t('table.search') }}</el-button>
+      <el-button
+        class="filter-item"
+        style="margin-left: 10px;"
+        type="primary"
+        icon="el-icon-edit"
+        @click="handleCreate"
+      >{{ $t('table.add') }}</el-button>
     </div>
 
-    <el-table v-loading="listLoading" :data="list" border fit highlight-current-row style="width: 100%" lazy
-      :load="load" row-key="Id" :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
-      @current-change="handleSelect">
+    <el-table
+      v-loading="listLoading"
+      :data="list"
+      border
+      fit
+      highlight-current-row
+      style="width: 100%"
+      lazy
+      :load="load"
+      row-key="Id"
+      :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
+      @current-change="handleSelect"
+    >
       <el-table-column align="center" label="ID" width="120">
         <template slot-scope="scope">
           <span>{{ scope.row.Id }}</span>
@@ -48,24 +72,25 @@
 
       <el-table-column align="center" :label="'是否启用'">
         <template slot-scope="scope">
-          <el-tag :type="scope.row.Enabled ? 'success' : 'danger'">
-            {{scope.row.Enabled ? '是' : '否'}}</el-tag>
+          <el-tag :type="scope.row.Enabled ? 'success' : 'danger'">{{scope.row.Enabled ? '是' : '否'}}</el-tag>
         </template>
       </el-table-column>
 
       <el-table-column align="center" label="是否按钮">
         <template slot-scope="scope">
-          <el-tag :type="!scope.row.IsButton  ? 'success' : 'danger'" disable-transitions>
-            {{!scope.row.IsButton ? "否" : "是"}}
-          </el-tag>
+          <el-tag
+            :type="!scope.row.IsButton  ? 'success' : 'danger'"
+            disable-transitions
+          >{{!scope.row.IsButton ? "否" : "是"}}</el-tag>
         </template>
       </el-table-column>
 
       <el-table-column align="center" label="是否隐藏">
         <template slot-scope="scope">
-          <el-tag :type="!scope.row.IsHide  ? 'success' : 'danger'" disable-transitions>
-            {{!scope.row.IsHide ? "否" : "是"}}
-          </el-tag>
+          <el-tag
+            :type="!scope.row.IsHide  ? 'success' : 'danger'"
+            disable-transitions
+          >{{!scope.row.IsHide ? "否" : "是"}}</el-tag>
         </template>
       </el-table-column>
 
@@ -80,21 +105,33 @@
           <router-link :to="'/system/permission/edit/'+scope.row.Id">
             <el-button type="primary" size="mini" icon="el-icon-edit">{{ $t('table.edit') }}</el-button>
           </router-link>
-          <el-button size="mini" type="danger" icon="el-icon-delete" style="margin-left: 5px;"
-            @click="handleDelete(scope.row)">
-            {{ $t('table.delete') }}
-          </el-button>
+          <el-button
+            size="mini"
+            type="danger"
+            icon="el-icon-delete"
+            style="margin-left: 5px;"
+            @click="handleDelete(scope.row)"
+          >{{ $t('table.delete') }}</el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit"
-      @pagination="getList" />
+    <pagination
+      v-show="total>0"
+      :total="total"
+      :page.sync="listQuery.page"
+      :limit.sync="listQuery.limit"
+      @pagination="getList"
+    />
   </div>
 </template>
 
 <script>
-import { fetchList, getPermissionTree, deletePermission } from "@/api/permission";
+import {
+  fetchList,
+  getPermissionTree,
+  deletePermission
+} from "@/api/permission";
 import util from "@/utils/util.js";
 import Pagination from "@/components/Pagination"; // Secondary package based on el-pagination
 
@@ -118,7 +155,8 @@ export default {
             DataType: util.query.dataType.int,
             Option: util.query.opt.eq,
             Value: 0
-          }, {
+          },
+          {
             Field: "IsDeleted",
             DataType: util.query.dataType.boolean,
             Option: util.query.opt.eq,
@@ -129,18 +167,21 @@ export default {
     };
   },
   watch: {
-    permissionName: function (newVal, oldVal) {
-      let conditions = [{
-        Field: "ParentId",
-        DataType: util.query.dataType.int,
-        Option: util.query.opt.eq,
-        Value: 0
-      }, {
-        Field: "IsDeleted",
-        DataType: util.query.dataType.boolean,
-        Option: util.query.opt.eq,
-        Value: false
-      }];
+    permissionName: function(newVal, oldVal) {
+      let conditions = [
+        {
+          Field: "ParentId",
+          DataType: util.query.dataType.int,
+          Option: util.query.opt.eq,
+          Value: 0
+        },
+        {
+          Field: "IsDeleted",
+          DataType: util.query.dataType.boolean,
+          Option: util.query.opt.eq,
+          Value: false
+        }
+      ];
 
       if (newVal != "") {
         conditions.push({
@@ -176,7 +217,7 @@ export default {
       });
     },
     load(tree, treeNode, resolve) {
-      getPermissionTree({ parentId: tree.Id }).then((res) => {
+      getPermissionTree({ parentId: tree.Id }).then(res => {
         resolve(res.data.data);
       });
     },
@@ -184,25 +225,31 @@ export default {
       this.$router.push({ path: "/system/permission/create" });
     },
     handleDelete(row) {
-      deletePermission(row.Id).then(response => {
-        let { success, msg } = response.data;
-        if (success) {
-          this.$notify({
-            title: '提示',
-            message: '删除成功',
-            type: 'success',
-            duration: 2000
-          })
-          this.getList();
-        } else {
-          this.$notify({
-            title: '提示',
-            message: msg,
-            type: 'error',
-            duration: 2000
-          })
-        }
-      })
+      this.$confirm("您确定要执行该操作吗？", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).then(() => {
+        deletePermission(row.Id).then(response => {
+          let { success, msg } = response.data;
+          if (success) {
+            this.$notify({
+              title: "提示",
+              message: "删除成功",
+              type: "success",
+              duration: 2000
+            });
+            this.getList();
+          } else {
+            this.$notify({
+              title: "提示",
+              message: msg,
+              type: "error",
+              duration: 2000
+            });
+          }
+        });
+      });
     },
     handleFilter() {
       this.listQuery.page = 1;
@@ -210,8 +257,8 @@ export default {
     }
   },
   handleSelect(val) {
-    this.selectedRow = val
-  },
+    this.selectedRow = val;
+  }
 };
 </script>
 

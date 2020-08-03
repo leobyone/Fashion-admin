@@ -8,6 +8,14 @@ export function fetchList(query) {
   })
 }
 
+export function fetchRole(id) {
+  return request({
+    url: '/role',
+    method: 'get',
+    params: { id }
+  })
+}
+
 export function getRoles(query) {
   return request({
     url: '/role/list',
@@ -34,7 +42,8 @@ export function updateRole(data) {
 
 export function deleteRole(id) {
   return request({
-    url: `/role/${id}`,
-    method: 'delete'
+    url: '/role',
+    method: 'delete',
+    params: { id }
   })
 }
