@@ -95,7 +95,7 @@ export default {
       title: '',
       userForm: Object.assign({}, defaultForm),
       loading: false,
-      roleIds: '',
+      roleIds: "",
       roleList: [],
       status: 0,
       rules: {
@@ -141,25 +141,30 @@ export default {
       });
     },
     getRoles() {
-      let conditions = [{
-        Field: "IsDeleted",
-        DataType: util.query.dataType.boolean,
-        Option: util.query.opt.eq,
-        Value: false
-      }];
-      getRoles({ conditions: util.query.convert(conditions), sorts: [] }).then(response => {
+      let conditions = [
+        {
+          Field: "IsDeleted",
+          DataType: util.query.dataType.boolean,
+          Option: util.query.opt.eq,
+          Value: false
+        }
+      ];
+      getRoles({
+        conditions: util.query.convert(conditions),
+        sorts: util.query.convert([])
+      }).then(response => {
         let { success, data } = response.data;
         if (success) {
           this.roleList = data.map(t => {
             return {
               value: t.Id,
               label: t.Name
-            }
+            };
           });
         } else {
-          this.$message({ message: '加载角色列表失败', type: 'error' });
+          this.$message({ message: "加载角色列表失败", type: "error" });
         }
-      })
+      });
     },
     setTagsViewTitle() {
       const title = this.lang === "zh" ? "编辑用户" : "Edit User";
@@ -202,7 +207,7 @@ export default {
                 type: "error",
                 duration: 1000
               });
-            });
+            })
           } else {
             addUser(that.userForm).then(response => {
               let { success, msg } = response.data;
@@ -226,9 +231,10 @@ export default {
                 type: "error",
                 duration: 1000
               });
-            });
+            }).then(() => {
+              that.loading = false;
+            })
           }
-          that.loading = false;
         } else {
           console.log("error submit!!");
           return false;

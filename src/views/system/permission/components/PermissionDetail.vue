@@ -55,6 +55,8 @@ const defaultForm = {
   Path: "",
   Component: "",
   Redirect: "",
+  Action: "",
+  Code: "",
   Enabled: true,
   IsButton: false,
   IsHide: false,

@@ -1,16 +1,37 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="userName" :placeholder="$t('table.username')" style="width: 200px;" class="filter-item"
-        @keyup.enter.native="handleFilter" />
-      <el-button class="filter-item" type="primary" icon="el-icon-search" style="margin-left:10px;"
-        @click="handleFilter">
-        {{ $t('table.search') }}</el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit"
-        @click="handleCreate">{{ $t('table.add') }}</el-button>
+      <el-input
+        v-model="userName"
+        :placeholder="$t('table.username')"
+        style="width: 200px;"
+        class="filter-item"
+        @keyup.enter.native="handleFilter"
+      />
+      <el-button
+        class="filter-item"
+        type="primary"
+        icon="el-icon-search"
+        style="margin-left:10px;"
+        @click="handleFilter"
+      >{{ $t('table.search') }}</el-button>
+      <el-button
+        class="filter-item"
+        style="margin-left: 10px;"
+        type="primary"
+        icon="el-icon-edit"
+        @click="handleCreate"
+      >{{ $t('table.add') }}</el-button>
     </div>
 
-    <el-table v-loading="listLoading" :data="list" border fit highlight-current-row style="width: 100%">
+    <el-table
+      v-loading="listLoading"
+      :data="list"
+      border
+      fit
+      highlight-current-row
+      style="width: 100%"
+    >
       <el-table-column align="center" label="ID" width="80">
         <template slot-scope="scope">
           <span>{{ scope.row.Id }}</span>
@@ -63,19 +84,30 @@
 
       <el-table-column align="center" label="Actions" width="200">
         <template slot-scope="scope">
-          <el-button type="primary" size="small" icon="el-icon-edit" @click="handleEdit(scope.row)">
-            {{ $t('table.edit') }}
-          </el-button>
-          <el-button size="small" type="danger" icon="el-icon-delete" style="margin-left: 5px;"
-            @click="handleDelete(scope.row)">
-            {{ $t('table.delete') }}
-          </el-button>
+          <el-button
+            type="primary"
+            size="small"
+            icon="el-icon-edit"
+            @click="handleEdit(scope.row)"
+          >{{ $t('table.edit') }}</el-button>
+          <el-button
+            size="small"
+            type="danger"
+            icon="el-icon-delete"
+            style="margin-left: 5px;"
+            @click="handleDelete(scope.row)"
+          >{{ $t('table.delete') }}</el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit"
-      @pagination="getList" />
+    <pagination
+      v-show="total>0"
+      :total="total"
+      :page.sync="listQuery.page"
+      :limit.sync="listQuery.limit"
+      @pagination="getList"
+    />
   </div>
 </template>
 
@@ -92,7 +124,7 @@ export default {
     statusFilter(status) {
       const statusMap = {
         1: "success",
-        0: "danger",
+        0: "danger"
       };
       return statusMap[status];
     },
@@ -145,13 +177,15 @@ export default {
     };
   },
   watch: {
-    userName: function (newVal, oldVal) {
-      let conditions = [{
-        Field: "IsDeleted",
-        DataType: util.query.dataType.boolean,
-        Option: util.query.opt.eq,
-        Value: false
-      }];
+    userName: function(newVal, oldVal) {
+      let conditions = [
+        {
+          Field: "IsDeleted",
+          DataType: util.query.dataType.boolean,
+          Option: util.query.opt.eq,
+          Value: false
+        }
+      ];
 
       if (newVal != "") {
         conditions.push({
@@ -193,28 +227,33 @@ export default {
       this.$router.push({ path: `/system/user/edit/${row.Id}` });
     },
     handleDelete(row) {
-      deleteUser(row.Id).then(response => {
-        let { success, msg } = response.data;
-        if (success) {
-          this.$notify({
-            title: '提示',
-            message: '删除成功',
-            type: 'success',
-            duration: 2000
-          })
-          this.getList();
-        } else {
-          this.$notify({
-            title: '提示',
-            message: msg,
-            type: 'error',
-            duration: 2000
-          })
-        }
-      })
+      this.$confirm("您确定要执行该操作吗？", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).then(() => {
+        deleteUser(row.Id).then(response => {
+          let { success, msg } = response.data;
+          if (success) {
+            this.$notify({
+              title: "提示",
+              message: "删除成功",
+              type: "success",
+              duration: 2000
+            });
+            this.getList();
+          } else {
+            this.$notify({
+              title: "提示",
+              message: msg,
+              type: "error",
+              duration: 2000
+            });
+          }
+        });
+      });
     },
     handleFilter() {
-      debugger
       this.listQuery.page = 1;
       this.getList();
     }
