@@ -124,6 +124,27 @@ aside {
   padding: 20px;
 }
 
+.form-container{
+  position: absolute;
+  left: 0;
+  right: 0;
+  width: 720px;
+  padding: 35px 35px 15px;
+  margin: 20px auto;
+}
+
+/*table表格颜色字号修改*/
+.pc-table-bgcolor .has-gutter tr,
+.pc-table-bgcolor .has-gutter tr th {
+  background: #f7f7f7;
+}
+
+.pc-table-bgcolor .has-gutter tr th .cell {
+  color: #3c7ec8;
+  font-size: 16px;
+  font-weight: normal;
+}
+
 .components-container {
   margin: 30px 50px;
   position: relative;
