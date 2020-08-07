@@ -1,11 +1,11 @@
 <template>
   <el-card class="form-container" shadow="never" v-loading="loading">
     <el-form ref="userForm" :model="userForm" :rules="rules" label-width="150px">
-      <el-form-item style="margin-bottom: 40px;" prop="LoginName" label="登录名">
+      <el-form-item prop="LoginName" label="登录名">
         <el-input v-model="userForm.LoginName" :maxlength="100" name="name" required></el-input>
       </el-form-item>
 
-      <el-form-item prop="Avatar" style="margin-bottom: 30px;" label="头像">
+      <el-form-item prop="Avatar" label="头像">
         <Upload v-model="userForm.Avatar" />
       </el-form-item>
 
@@ -46,14 +46,14 @@
         <el-switch v-model="status"></el-switch>
       </el-form-item>
 
-      <el-form-item style="margin-bottom: 40px;" label="备注">
+      <el-form-item label="备注">
         <el-input v-model="userForm.Remark" :rows="3" type="textarea" placeholder="Please enter the remark" />
       </el-form-item>
 
       <el-form-item>
-        <el-button style="margin-left: 10px;" type="success" size="small" @click="submitForm">提交
+        <el-button type="primary" @click="submitForm('userForm')">提交
         </el-button>
-        <el-button size="small" type="warning" @click="resetForm">重置</el-button>
+        <el-button @click="resetForm('userForm')" v-if="!isEdit">重置</el-button>
       </el-form-item>
     </el-form>
   </el-card>
@@ -177,10 +177,9 @@ export default {
       const title = "Edit User";
       document.title = `${title} - ${this.userForm.Id}`;
     },
-    submitForm() {
+    submitForm(formName) {
       let that = this;
-      console.log(that.userForm);
-      that.$refs.userForm.validate(valid => {
+      that.$refs[formName].validate(valid => {
         if (valid) {
           that.loading = true;
           if (that.isEdit) {
@@ -217,7 +216,7 @@ export default {
                   type: "success",
                   duration: 1000
                 });
-                this.$router.back();
+                that.$router.back();
               } else {
                 that.$message({
                   message: msg,
@@ -241,8 +240,8 @@ export default {
         }
       });
     },
-    resetForm() {
-      this.$refs.userForm.resetFields();
+    resetForm(formName) {
+      this.$refs[formName].resetFields();
       this.userForm = Object.assign({}, this.defaultForm);
     }
   }

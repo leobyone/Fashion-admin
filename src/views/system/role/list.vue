@@ -1,37 +1,15 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input
-        v-model="roleName"
-        :placeholder="'角色名'"
-        style="width: 200px;"
-        class="filter-item"
-        @keyup.enter.native="handleFilter"
-      />
-      <el-button
-        class="filter-item"
-        type="primary"
-        icon="el-icon-search"
-        style="margin-left:10px;"
-        @click="handleFilter"
-      >{{ $t('table.search') }}</el-button>
-      <el-button
-        class="filter-item"
-        style="margin-left: 10px;"
-        type="primary"
-        icon="el-icon-edit"
-        @click="handleCreate"
-      >{{ $t('table.add') }}</el-button>
+      <el-input v-model="roleName" :placeholder="'角色名'" style="width: 200px;" class="filter-item"
+        @keyup.enter.native="handleFilter" />
+      <el-button class="filter-item" type="primary" icon="el-icon-search" style="margin-left:10px;"
+        @click="handleFilter">{{ $t('table.search') }}</el-button>
+      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit"
+        @click="handleCreate">{{ $t('table.add') }}</el-button>
     </div>
 
-    <el-table
-      v-loading="listLoading"
-      :data="list"
-      border
-      fit
-      highlight-current-row
-      style="width: 100%"
-    >
+    <el-table v-loading="listLoading" :data="list" border fit highlight-current-row style="width: 100%">
       <el-table-column align="center" label="ID" width="80">
         <template slot-scope="scope">
           <span>{{ scope.row.Id }}</span>
@@ -39,18 +17,16 @@
       </el-table-column>
 
       <el-table-column min-width="200px" label="Name">
-        <template slot-scope="{row}">
-          <router-link :to="'/system/role/edit/'+row.Id" class="link-type">
-            <span>{{ row.Name }}</span>
+        <template slot-scope="scope">
+          <router-link :to="'/system/role/edit/'+scope.row.Id" class="link-type">
+            <span>{{ scope.row.Name }}</span>
           </router-link>
         </template>
       </el-table-column>
 
       <el-table-column class-name="status-col" label="Enabled" width="110">
         <template slot-scope="scope">
-          <el-tag
-            :type="scope.row.Enabled ? 'success' : 'danger'"
-          >{{ scope.row.Enabled ? '正常' : '禁用' }}</el-tag>
+          <el-tag :type="scope.row.Enabled ? 'success' : 'danger'">{{ scope.row.Enabled ? '正常' : '禁用' }}</el-tag>
         </template>
       </el-table-column>
 
@@ -66,31 +42,17 @@
             <el-button type="primary" size="small" icon="el-icon-edit">{{ $t('table.edit') }}</el-button>
           </router-link>
           <router-link :to="'/system/role/assign/'+scope.row.Id">
-            <el-button
-              type="warning"
-              size="small"
-              icon="el-icon-share"
-              style="margin-left: 5px;"
-            >{{ $t('table.assign') }}</el-button>
+            <el-button type="warning" size="small" icon="el-icon-share" style="margin-left: 5px;">
+              {{ $t('table.assign') }}</el-button>
           </router-link>
-          <el-button
-            size="small"
-            type="danger"
-            icon="el-icon-delete"
-            style="margin-left: 5px;"
-            @click="handleDelete(scope.row)"
-          >{{ $t('table.delete') }}</el-button>
+          <el-button size="small" type="danger" icon="el-icon-delete" style="margin-left: 5px;"
+            @click="handleDelete(scope.row)">{{ $t('table.delete') }}</el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination
-      v-show="total>0"
-      :total="total"
-      :page.sync="listQuery.page"
-      :limit.sync="listQuery.limit"
-      @pagination="getList"
-    />
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit"
+      @pagination="getList" />
   </div>
 </template>
 
@@ -125,7 +87,7 @@ export default {
     };
   },
   watch: {
-    roleName: function(newVal, oldVal) {
+    roleName: function (newVal, oldVal) {
       let conditions = [
         {
           Field: "IsDeleted",
@@ -180,19 +142,17 @@ export default {
         deleteRole(row.Id).then(response => {
           let { success, msg } = response.data;
           if (success) {
-            this.$notify({
-              title: "提示",
+            this.$message({
               message: "删除成功",
               type: "success",
-              duration: 2000
+              duration: 1000
             });
             this.getList();
           } else {
-            this.$notify({
-              title: "提示",
+            this.$message({
               message: msg,
               type: "error",
-              duration: 2000
+              duration: 1000
             });
           }
         });
@@ -205,14 +165,3 @@ export default {
   }
 };
 </script>
-
-<style scoped>
-.edit-input {
-  padding-right: 100px;
-}
-.cancel-btn {
-  position: absolute;
-  right: 15px;
-  top: 10px;
-}
-</style>

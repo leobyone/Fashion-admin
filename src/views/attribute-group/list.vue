@@ -79,7 +79,7 @@
 </template>
 
 <script>
-import { fetchList, deleteAttributeGroup, addAttributeGroup, updateAttributeGroup } from "@/api/attributeGroup";
+import { fetchList, deleteAttributeGroup, addAttributeGroup, updateAttributeGroup } from "@/api/attribute-group.js";
 import util from "@/utils/util.js";
 import Pagination from "@/components/Pagination"; // Secondary package based on el-pagination
 
@@ -174,19 +174,17 @@ export default {
       deleteAttributeGroup(row.Id).then(response => {
         let { success, msg } = response.data;
         if (success) {
-          this.$notify({
-            title: '提示',
+          this.$message({
             message: '删除成功',
             type: 'success',
-            duration: 2000
+            duration: 1000
           })
           this.getList();
         } else {
-          this.$notify({
-            title: '提示',
+          this.$message({
             message: msg,
             type: 'error',
-            duration: 2000
+            duration: 1000
           })
         }
       })

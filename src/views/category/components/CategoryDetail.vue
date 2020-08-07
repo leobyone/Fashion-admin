@@ -1,46 +1,42 @@
 <template>
-  <div class="createPost-container" v-loading="loading">
-    <el-form ref="postForm" :model="postForm" :rules="rules" label-width="100px" class="form-container">
-      <sticky :z-index="10" :class-name="'sub-navbar success'">
-        <el-button style="margin-left: 10px;" type="success" size="small" @click="submitForm">提交
+  <el-card class="form-container" shadow="never" v-loading="loading">
+    <el-form ref="cateForm" :model="cateForm" :rules="rules" label-width="150px">
+
+      <el-form-item prop="Name" label="分类名称">
+        <el-input v-model="cateForm.Name" :maxlength="100" name="name" required></el-input>
+      </el-form-item>
+
+      <el-form-item prop="ParentId" label="上级分类">
+        <el-select v-model="cateForm.ParentId" multiple placeholder="请选择">
+          <el-option v-for="item in categoryOptions" :key="item.value" :label="item.label" :value="item.value">
+          </el-option>
+        </el-select>
+      </el-form-item>
+
+      <el-form-item prop="IsShow" label="是否显示">
+        <el-radio-group v-model="cateForm.IsShow">
+          <el-radio class="radio" :label="1">是</el-radio>
+          <el-radio class="radio" :label="0">否</el-radio>
+        </el-radio-group>
+      </el-form-item>
+
+      <el-form-item prop="Path" label="跳转地址">
+        <el-input v-model="cateForm.Path" auto-complete="off"></el-input>
+      </el-form-item>
+
+      <el-form-item prop="OrderSort" label="排序">
+        <el-input v-model="cateForm.OrderSort" type="number"></el-input>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="submitForm('cateForm')">提交
         </el-button>
-        <el-button size="small" type="warning" @click="goBack">返回</el-button>
-      </sticky>
-
-      <div class="createPost-main-container">
-        <el-form-item style="margin-bottom: 40px;" prop="Name" label="分类名称">
-          <el-input v-model="postForm.Name" :maxlength="100" name="name" required></el-input>
-        </el-form-item>
-
-        <el-form-item prop="ParentId" style="margin-bottom: 30px;" label="上级分类">
-          <el-select v-model="postForm.ParentId" multiple placeholder="请选择">
-            <el-option v-for="item in categoryOptions" :key="item.value" :label="item.label" :value="item.value">
-            </el-option>
-          </el-select>
-        </el-form-item>
-
-        <el-form-item prop="IsShow" label="是否显示">
-          <el-radio-group v-model="postForm.IsShow">
-            <el-radio class="radio" :label="1">是</el-radio>
-            <el-radio class="radio" :label="0">否</el-radio>
-          </el-radio-group>
-        </el-form-item>
-
-        <el-form-item prop="Path" label="跳转地址">
-          <el-input v-model="postForm.Path" auto-complete="off"></el-input>
-        </el-form-item>
-
-        <el-form-item prop="OrderSort" label="排序">
-          <el-input v-model="postForm.OrderSort" type="number"></el-input>
-        </el-form-item>
-
-      </div>
+        <el-button @click="resetForm('cateForm')" v-if="!isEdit">重置</el-button>
+      </el-form-item>
     </el-form>
-  </div>
+  </el-card>
 </template>
 
 <script>
-import Sticky from "@/components/Sticky"; // 粘性header组件
 import { validURL } from "@/utils/validate";
 import { fetchCategory, addCategory, updateCategory, getCategoryList } from "@/api/category";
 import util from "@/utils/util.js";
@@ -55,9 +51,6 @@ const defaultForm = {
 
 export default {
   name: "CategoryDetail",
-  components: {
-    Sticky
-  },
   props: {
     isEdit: {
       type: Boolean,
@@ -67,7 +60,7 @@ export default {
   data() {
     return {
       title: '',
-      postForm: Object.assign({}, defaultForm),
+      cateForm: Object.assign({}, defaultForm),
       loading: false,
       categoryOptions: [],
       rules: {
@@ -97,7 +90,7 @@ export default {
   methods: {
     fetchData(id) {
       fetchCategory(id).then(response => {
-        this.postForm = response.data.data;
+        this.cateForm = response.data.data;
         // set tagsview title
         this.setTagsViewTitle();
         // set page title
@@ -130,113 +123,82 @@ export default {
     setTagsViewTitle() {
       const title = this.lang === "zh" ? "编辑分类" : "Edit Category";
       const route = Object.assign({}, this.tempRoute, {
-        title: `${title}-${this.postForm.Id}`
+        title: `${title}-${this.cateForm.Id}`
       });
       this.$store.dispatch("tagsView/updateVisitedView", route);
     },
     setPageTitle() {
       const title = "Edit Category";
-      document.title = `${title} - ${this.postForm.Id}`;
+      document.title = `${title} - ${this.cateForm.Id}`;
     },
-    submitForm() {
+    submitForm(formName) {
       let that = this;
-      console.log(that.postForm);
-      that.$refs.postForm.validate(valid => {
+      console.log(that.cateForm);
+      that.$refs[formName].validate(valid => {
         if (valid) {
           that.loading = true;
           if (that.isEdit) {
-            updateCategory(that.postForm).then(response => {
+            updateCategory(that.cateForm).then(response => {
+              that.loading = false;
               let { success, msg } = response.data;
               if (success) {
-                that.$notify({
-                  title: "提示",
+                that.$message({
                   message: "更新分类成功",
                   type: "success",
-                  duration: 2000
+                  duration: 1000
                 });
-
-                setTimeout(function () {
-                  that.goBack();
-                }, 2000);
+                that.$router.back();
               } else {
-                that.$notify({
-                  title: "提示",
+                that.$message({
                   message: msg,
                   type: "error",
-                  duration: 2000
+                  duration: 1000
                 });
               }
             }).catch(() => {
-              that.$notify({
-                title: "提示",
+              that.$message({
                 message: "更新分类失败",
                 type: "error",
-                duration: 2000
+                duration: 1000
               });
             });
           } else {
-            addCategory(that.postForm).then(response => {
+            addCategory(that.cateForm).then(response => {
+              that.loading = false;
               let { success, msg } = response.data;
               if (success) {
-                that.$notify({
-                  title: "提示",
+                that.$message({
                   message: "新增分类成功",
                   type: "success",
-                  duration: 2000
+                  duration: 1000
                 });
-
-                setTimeout(function () {
-                  that.goBack();
-                }, 2000);
+                that.$router.back();
               } else {
-                that.$notify({
-                  title: "提示",
+                that.$message({
                   message: msg,
                   type: "error",
-                  duration: 2000
+                  duration: 1000
                 });
               }
             }).catch(() => {
-              that.$notify({
-                title: "提示",
+              that.$message({
                 message: "新增分类失败",
                 type: "error",
-                duration: 2000
+                duration: 1000
               });
             });
           }
-          that.loading = false;
         } else {
           console.log("error submit!!");
           return false;
         }
       });
     },
-    goBack() {
-      this.$router.push({ path: "/system/category/list" });
+    resetForm(formName) {
+      this.$refs[formName].resetFields();
+      this.cateForm = Object.assign({}, this.defaultForm);
     }
   }
 };
 </script>
 
-<style lang="scss" scoped>
-@import "~@/styles/mixin.scss";
-
-.createPost-container {
-  position: relative;
-
-  .createPost-main-container {
-    padding: 40px 45px 20px 50px;
-
-    .postInfo-container {
-      position: relative;
-      @include clearfix;
-      margin-bottom: 10px;
-
-      .postInfo-container-item {
-        float: left;
-      }
-    }
-  }
-}
-</style>

@@ -1,52 +1,48 @@
 <template>
-  <div class="createPost-container">
-    <el-form ref="postForm" :model="postForm" :rules="rules" label-width="100px" class="form-container">
-      <sticky :z-index="10" :class-name="'sub-navbar success'">
-        <el-button v-loading="loading" style="margin-left: 10px;" type="success" size="small" @click="submitForm">提交
-        </el-button>
-        <el-button size="small" type="warning" @click="goBack">返回</el-button>
-      </sticky>
+  <el-card class="form-container" shadow="never" v-loading="loading">
+    <el-form ref="permissionForm" :model="permissionForm" :rules="rules" label-width="150px">
+      <el-form-item prop="Name" label="菜单名">
+        <el-input v-model="permissionForm.Name" :maxlength="100" required></el-input>
+      </el-form-item>
 
-      <div class="createPost-main-container">
-        <el-form-item style="margin-bottom: 40px;" prop="Name" label="菜单名">
-          <el-input v-model="postForm.Name" :maxlength="100" required></el-input>
-        </el-form-item>
+      <el-form-item prop="Path" label="路由">
+        <el-input v-model="permissionForm.Path" :maxlength="200"></el-input>
+      </el-form-item>
 
-        <el-form-item style="margin-bottom: 40px;" prop="Path" label="路由">
-          <el-input v-model="postForm.Path" :maxlength="200"></el-input>
-        </el-form-item>
+      <el-form-item prop="Component" label="页面地址">
+        <el-input v-model="permissionForm.Component" :maxlength="200"></el-input>
+      </el-form-item>
 
-        <el-form-item style="margin-bottom: 40px;" prop="Component" label="页面地址">
-          <el-input v-model="postForm.Component" :maxlength="200"></el-input>
-        </el-form-item>
+      <el-form-item prop="Redirect" label="跳转地址">
+        <el-input v-model="permissionForm.Redirect" :maxlength="200"></el-input>
+      </el-form-item>
 
-        <el-form-item style="margin-bottom: 40px;" prop="Redirect" label="跳转地址">
-          <el-input v-model="postForm.Redirect" :maxlength="200"></el-input>
-        </el-form-item>
+      <el-form-item prop="Enabled" label="是否启用">
+        <el-switch v-model="permissionForm.Enabled"></el-switch>
+      </el-form-item>
 
-        <el-form-item prop="Enabled" label="是否启用">
-          <el-switch v-model="postForm.Enabled"></el-switch>
-        </el-form-item>
+      <el-form-item prop="IsButton" label="是否按钮">
+        <el-switch v-model="permissionForm.IsButton"></el-switch>
+      </el-form-item>
 
-        <el-form-item prop="IsButton" label="是否按钮">
-          <el-switch v-model="postForm.IsButton"></el-switch>
-        </el-form-item>
+      <el-form-item prop="IsHide" label="是否隐藏">
+        <el-switch v-model="permissionForm.IsHide"></el-switch>
+      </el-form-item>
 
-        <el-form-item prop="IsHide" label="是否隐藏">
-          <el-switch v-model="postForm.IsHide"></el-switch>
-        </el-form-item>
+      <el-form-item label="描述">
+        <el-input v-model="permissionForm.Description" :rows="3" type="textarea"
+          placeholder="Please enter the description" />
+      </el-form-item>
 
-        <el-form-item style="margin-bottom: 40px;" label="描述">
-          <el-input v-model="postForm.Description" :rows="3" type="textarea"
-            placeholder="Please enter the description" />
-        </el-form-item>
-      </div>
+      <el-form-item>
+        <el-button type="primary" @click="submitForm('permissionForm')">提交</el-button>
+        <el-button @click="resetForm('permissionForm')" v-if="!isEdit">重置</el-button>
+      </el-form-item>
     </el-form>
-  </div>
+  </el-card>
 </template>
 
 <script>
-import Sticky from "@/components/Sticky"; // 粘性header组件
 import { fetchPermission, addPermission, updatePermission } from "@/api/permission";
 
 const defaultForm = {
@@ -65,9 +61,6 @@ const defaultForm = {
 
 export default {
   name: "PermissionDetail",
-  components: {
-    Sticky
-  },
   props: {
     isEdit: {
       type: Boolean,
@@ -77,7 +70,7 @@ export default {
   data() {
     return {
       title: '',
-      postForm: Object.assign({}, defaultForm),
+      permissionForm: Object.assign({}, defaultForm),
       loading: false,
       rules: {
         Name: [
@@ -106,8 +99,7 @@ export default {
   methods: {
     fetchData(id) {
       fetchPermission(id).then(response => {
-        this.postForm = response.data.data;
-
+        this.permissionForm = response.data.data;
         // set tagsview title
         this.setTagsViewTitle();
         // set page title
@@ -119,61 +111,54 @@ export default {
     setTagsViewTitle() {
       const title = this.lang === "zh" ? "编辑菜单" : "Edit Permission";
       const route = Object.assign({}, this.tempRoute, {
-        title: `${title}-${this.postForm.Id}`
+        title: `${title}-${this.permissionForm.Id}`
       });
       this.$store.dispatch("tagsView/updateVisitedView", route);
     },
     setPageTitle() {
       const title = "Edit Permission";
-      document.title = `${title} - ${this.postForm.Id}`;
+      document.title = `${title} - ${this.permissionForm.Id}`;
     },
     submitForm() {
       let that = this;
-      console.log(this.postForm);
-      that.$refs.postForm.validate(valid => {
+      that.$refs.permissionForm.validate(valid => {
         if (valid) {
           that.loading = true;
           if (that.isEdit) {
-            updatePermission(that.postForm).then(response => {
+            updatePermission(that.permissionForm).then(response => {
+              that.loading = false;
               let { success, msg } = response.data;
               if (success) {
-                that.$notify({
-                  title: "提示",
+                that.$message({
                   message: "更新菜单成功",
                   type: "success",
-                  duration: 2000
+                  duration: 1000
                 });
-                setTimeout(function () {
-                  that.goBack();
-                }, 2000);
+                that.$router.back();
               } else {
-                that.$notify({
-                  title: "提示",
+                that.$message({
                   message: msg,
                   type: "error",
-                  duration: 2000
+                  duration: 1000
                 });
               }
             });
           } else {
-            addPermission(this.postForm).then(response => {
+            addPermission(this.permissionForm).then(response => {
+              that.loading = false;
               let { success, msg } = response.data;
               if (success) {
-                that.$notify({
-                  title: "提示",
+                that.$message({
                   message: "新增菜单成功",
                   type: "success",
-                  duration: 2000
+                  duration: 1000
                 });
-                setTimeout(function () {
-                  that.goBack();
-                }, 2000);
+                that.$router.back();
               } else {
-                that.$notify({
-                  title: "提示",
+                that.$message({
                   message: "新增菜单失败",
                   type: "error",
-                  duration: 2000
+                  duration: 1000
                 });
               }
             });
@@ -185,48 +170,10 @@ export default {
         }
       });
     },
-    goBack() {
-      this.$router.push({ path: "/system/permission/list" });
+    resetForm(formName) {
+      this.$refs[formName].resetFields();
+      this.permissionForm = Object.assign({}, this.defaultForm);
     }
   }
 };
 </script>
-
-<style lang="scss" scoped>
-@import "~@/styles/mixin.scss";
-
-.createPost-container {
-  position: relative;
-
-  .createPost-main-container {
-    padding: 40px 45px 20px 50px;
-
-    .postInfo-container {
-      position: relative;
-      @include clearfix;
-      margin-bottom: 10px;
-
-      .postInfo-container-item {
-        float: left;
-      }
-    }
-  }
-
-  .word-counter {
-    width: 40px;
-    position: absolute;
-    right: 10px;
-    top: 0px;
-  }
-}
-
-.user-textarea /deep/ {
-  textarea {
-    padding-right: 40px;
-    resize: none;
-    border: none;
-    border-radius: 0px;
-    border-bottom: 1px solid #bfcbd9;
-  }
-}
-</style>

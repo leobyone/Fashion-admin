@@ -16,8 +16,8 @@
 </template>
 
 <script>
-import ProductBaseInfo from "@/views/product/ProductBaseInfo.vue";
-import ProductProperties from "@/views/product/ProductProperties.vue";
+import ProductBaseInfo from './ProductBaseInfo';
+import ProductProperties from './ProductProperties';
 
 export default {
   name: "ProductDetail",

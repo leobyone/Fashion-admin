@@ -1,55 +1,28 @@
 <template>
-  <div class="createPost-container">
-    <sticky :z-index="10" :class-name="'sub-navbar success'">
-      <el-button
-        v-loading="loading"
-        style="margin-left: 10px;"
-        type="success"
-        size="small"
-        @click="submitForm"
-      >提交</el-button>
-      <el-button size="small" type="warning" @click="goBack">返回</el-button>
-    </sticky>
-    <div class="createPost-main-container">
-      <el-tree
-        :data="treeData"
-        show-checkbox
-        node-key="id"
-        ref="tree"
-        :expand-on-click-node="true"
-        :check-strictly="true"
-      >
-        <span class="custom-tree-node" slot-scope="{ node, data }">
-          <span>{{ node.label }}</span>
-          <span>
-            <el-checkbox
-              v-for="btn in data.btns"
-              :key="btn.value"
-              :label="btn.label"
-              :checked="isChecked(btn.value)"
-              @change="checkboxChange(btn.value)"
-            ></el-checkbox>
-          </span>
+  <el-card class="form-container" shadow="never" v-loading="loading">
+    <el-tree :data="treeData" show-checkbox node-key="id" ref="tree" :expand-on-click-node="true"
+      :check-strictly="true">
+      <span class="custom-tree-node" slot-scope="{ node, data }">
+        <span>{{ node.label }}</span>
+        <span>
+          <el-checkbox v-for="btn in data.btns" :key="btn.value" :label="btn.label" :checked="isChecked(btn.value)"
+            @change="checkboxChange(btn.value)"></el-checkbox>
         </span>
-      </el-tree>
+      </span>
+    </el-tree>
+    <div>
+      <el-button type="primary" @click="submitForm">提交</el-button>
+      <el-button @click="resetChecked">重置</el-button>
     </div>
-  </div>
+  </el-card>
 </template>
 
 <script>
-import Sticky from "@/components/Sticky"; // 粘性header组件
-import {
-  getPermissionIdsByRoleId,
-  getPermissionList,
-  assignPermission
-} from "@/api/permission";
+import { getPermissionIdsByRoleId, getPermissionList, assignPermission } from "@/api/permission";
 import util from "@/utils/util.js";
 
 export default {
   name: "AssignPermission",
-  components: {
-    Sticky
-  },
   data() {
     return {
       permissionList: [],
@@ -105,7 +78,6 @@ export default {
 
       Promise.all(promises)
         .then(res => {
-          debugger;
           let ret1 = res[0].data;
           that.$refs.tree.setCheckedKeys(ret1.data.PermissionIds);
           if (ret1.data.AssignBtns) {
@@ -154,24 +126,20 @@ export default {
     },
     //递归
     groupPermission(parent) {
-      let temp = this.permissionList
-        .filter(t => {
-          return t.ParentId == parent.id && !t.IsButton;
-        })
-        .map(t => {
-          return { id: t.Id, label: t.Name };
-        });
+      let temp = this.permissionList.filter(t => {
+        return t.ParentId == parent.id && !t.IsButton;
+      }).map(t => {
+        return { id: t.Id, label: t.Name };
+      });
 
       if (temp.length == 0) return null;
 
       temp.forEach((item, index) => {
-        item.btns = this.permissionList
-          .filter(t => {
-            return t.IsButton && t.ParentId == item.id;
-          })
-          .map(t => {
-            return { value: t.Id, label: t.Name };
-          });
+        item.btns = this.permissionList.filter(t => {
+          return t.IsButton && t.ParentId == item.id;
+        }).map(t => {
+          return { value: t.Id, label: t.Name };
+        });
 
         parent.children = temp;
 
@@ -203,35 +171,39 @@ export default {
       }
 
       if (that.roleId > 0 && pids.length > 0) {
-        assignPermission({ roleId: that.roleId, permissionIds: pids }).then(
-          res => {
-            let ret = res.data;
-            if (ret.success) {
-              that.$message({
-                message: ret.msg,
-                type: "success"
-              });
+        that.loading = true;
+        assignPermission({ roleId: that.roleId, permissionIds: pids }).then(res => {
+          that.loading = false;
+          let ret = res.data;
+          if (ret.success) {
+            that.$message({
+              message: ret.msg,
+              type: "success"
+            });
 
-              that.getPermissionIds(that.roleId).then(res => {
-                that.$refs.tree.setCheckedKeys(res.data.data.PermissionIds);
-                that.assignBtns = res.data.data.AssignBtns;
-                that.$message({
-                  message: "数据更新成功",
-                  type: "success"
-                });
-              });
-            } else {
+            that.getPermissionIds(that.roleId).then(res => {
+              that.$refs.tree.setCheckedKeys(res.data.data.PermissionIds);
+              that.assignBtns = res.data.data.AssignBtns;
               that.$message({
-                message: ret.msg,
-                type: "error"
+                message: "数据更新成功",
+                type: "success",
+                duration: 1000
               });
-            }
+            });
+          } else {
+            that.$message({
+              message: ret.msg,
+              type: "error",
+              duration: 1000
+            });
           }
+        }
         );
       } else {
         that.$message({
           message: "参数错误",
-          type: "error"
+          type: "error",
+          duration: 1000
         });
       }
     },
@@ -269,9 +241,6 @@ export default {
           this.checkAllMenu(menu.children, allMenus);
         }
       });
-    },
-    goBack() {
-      this.$router.push({ path: "/system/role/list" });
     }
   },
   created() {

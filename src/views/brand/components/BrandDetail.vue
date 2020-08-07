@@ -1,39 +1,35 @@
 <template>
-  <div class="createPost-container" v-loading="loading">
-    <el-form ref="postForm" :model="postForm" :rules="rules" label-width="100px" class="form-container">
-      <sticky :z-index="10" :class-name="'sub-navbar success'">
-        <el-button style="margin-left: 10px;" type="success" size="small" @click="submitForm">提交
+  <el-card class="form-container" shadow="never" v-loading="loading">
+    <el-form ref="brandForm" :model="brandForm" :rules="rules" label-width="150px">
+      <el-form-item prop="Name" label="品牌名称">
+        <el-input v-model="brandForm.Name" :maxlength="100" name="name" required></el-input>
+      </el-form-item>
+
+      <el-form-item prop="Logo" label="品牌LOGO">
+        <Upload v-model="brandForm.Logo" />
+      </el-form-item>
+
+      <el-form-item prop="IsShow" label="是否显示">
+        <el-radio-group v-model="brandForm.IsShow">
+          <el-radio class="radio" :label="1">是</el-radio>
+          <el-radio class="radio" :label="0">否</el-radio>
+        </el-radio-group>
+      </el-form-item>
+
+      <el-form-item prop="OrderSort" label="排序">
+        <el-input v-model="brandForm.OrderSort" type="number"></el-input>
+      </el-form-item>
+
+      <el-form-item>
+        <el-button type="primary" @click="submitForm('brandForm')">提交
         </el-button>
-        <el-button size="small" type="warning" @click="goBack">返回</el-button>
-      </sticky>
-
-      <div class="createPost-main-container">
-        <el-form-item style="margin-bottom: 40px;" prop="Name" label="品牌名称">
-          <el-input v-model="postForm.Name" :maxlength="100" name="name" required></el-input>
-        </el-form-item>
-
-        <el-form-item prop="Logo" style="margin-bottom: 30px;" label="品牌LOGO">
-          <Upload v-model="postForm.Logo" />
-        </el-form-item>
-
-        <el-form-item prop="IsShow" label="是否显示">
-          <el-radio-group v-model="postForm.IsShow">
-            <el-radio class="radio" :label="1">是</el-radio>
-            <el-radio class="radio" :label="0">否</el-radio>
-          </el-radio-group>
-        </el-form-item>
-
-        <el-form-item prop="OrderSort" label="排序">
-          <el-input v-model="postForm.OrderSort" type="number"></el-input>
-        </el-form-item>
-
-      </div>
+        <el-button @click="resetForm('brandForm')" v-if="!isEdit">重置</el-button>
+      </el-form-item>
     </el-form>
-  </div>
+  </el-card>
 </template>
 
 <script>
-import Sticky from "@/components/Sticky"; // 粘性header组件
 import Upload from "@/components/Upload/SingleImage3";
 import { validURL } from "@/utils/validate";
 import { fetchBrand, addBrand, updateBrand, getBrandList } from "@/api/category";
@@ -49,8 +45,7 @@ const defaultForm = {
 export default {
   name: "BrandDetail",
   components: {
-    Upload,
-    Sticky
+    Upload
   },
   props: {
     isEdit: {
@@ -61,7 +56,7 @@ export default {
   data() {
     return {
       title: '',
-      postForm: Object.assign({}, defaultForm),
+      brandForm: Object.assign({}, defaultForm),
       loading: false,
       rules: {
         Name: [
@@ -90,7 +85,7 @@ export default {
   methods: {
     fetchData(id) {
       fetchBrand(id).then(response => {
-        this.postForm = response.data.data;
+        this.brandForm = response.data.data;
         // set tagsview title
         this.setTagsViewTitle();
         // set page title
@@ -102,90 +97,85 @@ export default {
     setTagsViewTitle() {
       const title = this.lang === "zh" ? "编辑品牌" : "Edit Brand";
       const route = Object.assign({}, this.tempRoute, {
-        title: `${title}-${this.postForm.Id}`
+        title: `${title}-${this.brandForm.Id}`
       });
       this.$store.dispatch("tagsView/updateVisitedView", route);
     },
     setPageTitle() {
       const title = "Edit Brand";
-      document.title = `${title} - ${this.postForm.Id}`;
+      document.title = `${title} - ${this.brandForm.Id}`;
     },
-    submitForm() {
+    submitForm(formName) {
       let that = this;
-      console.log(that.postForm);
-      that.$refs.postForm.validate(valid => {
+      that.$refs[formName].validate(valid => {
         if (valid) {
           that.loading = true;
           if (that.isEdit) {
-            updateBrand(that.postForm).then(response => {
+            updateBrand(that.brandForm).then(response => {
+              that.loading = false;
               let { success, msg } = response.data;
               if (success) {
-                that.$notify({
-                  title: "提示",
+                that.$message({
                   message: "更新品牌成功",
                   type: "success",
-                  duration: 2000
+                  duration: 1000
                 });
 
                 setTimeout(function () {
                   that.goBack();
                 }, 2000);
               } else {
-                that.$notify({
-                  title: "提示",
+                that.$message({
                   message: msg,
                   type: "error",
-                  duration: 2000
+                  duration: 1000
                 });
               }
             }).catch(() => {
-              that.$notify({
-                title: "提示",
+              that.$message({
                 message: "更新品牌失败",
                 type: "error",
-                duration: 2000
+                duration: 1000
               });
             });
           } else {
-            addBrand(that.postForm).then(response => {
+            addBrand(that.brandForm).then(response => {
+              that.loading = false;
               let { success, msg } = response.data;
               if (success) {
-                that.$notify({
-                  title: "提示",
+                that.$message({
                   message: "新增品牌成功",
                   type: "success",
-                  duration: 2000
+                  duration: 1000
                 });
 
                 setTimeout(function () {
                   that.goBack();
                 }, 2000);
               } else {
-                that.$notify({
-                  title: "提示",
+                that.$message({
                   message: msg,
                   type: "error",
-                  duration: 2000
+                  duration: 1000
                 });
               }
             }).catch(() => {
-              that.$notify({
-                title: "提示",
+              that.$message({
                 message: "新增品牌失败",
                 type: "error",
-                duration: 2000
+                duration: 1000
               });
             });
           }
-          that.loading = false;
         } else {
           console.log("error submit!!");
           return false;
         }
       });
     },
-    goBack() {
-      this.$router.push({ path: "/brand/list" });
+    resetForm(formName) {
+      this.$refs[formName].resetFields();
+      this.brandForm = Object.assign({}, this.defaultForm);
     }
   }
 };
