@@ -1,13 +1,13 @@
 <template>
-  <category-detail :is-edit="true" />
+  <attribute-detail :is-edit="true" />
 </template>
 
 <script>
-import CategoryDetail from './components/CategoryDetail'
+import AttributeDetail from './components/AttributeDetail'
 
 export default {
-  name: 'EditCategory',
-  components: { CategoryDetail }
+  name: 'EditAttribute',
+  components: { AttributeDetail }
 }
 </script>
 

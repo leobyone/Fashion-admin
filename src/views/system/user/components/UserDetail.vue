@@ -141,14 +141,13 @@ export default {
       });
     },
     getRoles() {
-      let conditions = [
-        {
-          Field: "IsDeleted",
-          DataType: util.query.dataType.boolean,
-          Option: util.query.opt.eq,
-          Value: false
-        }
-      ];
+      let conditions = [{
+        Field: "IsDeleted",
+        DataType: util.query.dataType.boolean,
+        Option: util.query.opt.eq,
+        Value: false
+      }];
+
       getRoles({
         conditions: util.query.convert(conditions),
         sorts: util.query.convert([])

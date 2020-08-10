@@ -1,5 +1,5 @@
 <template>
-  <div class="createPost-container">
+  <el-card class="form-container" shadow="never">
     <el-steps :active="active" finish-status="success">
       <el-step title="填写商品信息"></el-step>
       <el-step title="填写商品属性"></el-step>
@@ -8,11 +8,7 @@
 
     <product-base-info :id="id" @callBack="callBack" v-show="active == 0"></product-base-info>
     <product-properties :id="id" @callBack="callBack" v-show="active == 1"></product-properties>
-
-    <el-button type="primary" style="margin-top: 12px;" @click="next" v-show="active == 0">下一步，填写商品属性</el-button>
-    <el-button style="margin-top: 12px;" @click="pre" v-show="active == 1">上一步，填写商品信息</el-button>
-    <el-button type="primary" style="margin-top: 12px;" @click="onSubmit" v-show="active == 1">完成，提交商品</el-button>
-  </div>
+  </el-card>
 </template>
 
 <script>
@@ -82,42 +78,3 @@ export default {
   }
 };
 </script>
-
-<style lang="scss" scoped>
-@import "~@/styles/mixin.scss";
-
-.createPost-container {
-  position: relative;
-
-  .createPost-main-container {
-    padding: 40px 45px 20px 50px;
-
-    .postInfo-container {
-      position: relative;
-      @include clearfix;
-      margin-bottom: 10px;
-
-      .postInfo-container-item {
-        float: left;
-      }
-    }
-  }
-
-  .word-counter {
-    width: 40px;
-    position: absolute;
-    right: 10px;
-    top: 0px;
-  }
-}
-
-.user-textarea /deep/ {
-  textarea {
-    padding-right: 40px;
-    resize: none;
-    border: none;
-    border-radius: 0px;
-    border-bottom: 1px solid #bfcbd9;
-  }
-}
-</style>

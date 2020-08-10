@@ -1,81 +1,81 @@
 <template>
-  <div class="createPost-container" v-loading="loading">
-    <el-form ref="postForm" :model="postForm" :rules="rules" label-width="100px" class="form-container">
-      <div class="createPost-main-container">
-        <el-form-item style="margin-bottom: 40px;" prop="Name" label="商品名称">
-          <el-input v-model="postForm.Name" :maxlength="100" required></el-input>
-        </el-form-item>
+  <div style="margin-top: 50px" v-loading="loading">
+    <el-form :model="productForm" :rules="rules" ref="productForm" label-width="120px" style="width: 600px"
+      size="small">
+      <el-form-item style="margin-bottom: 40px;" prop="Name" label="商品名称">
+        <el-input v-model="productForm.Name" :maxlength="100" required></el-input>
+      </el-form-item>
 
-        <el-form-item prop="CatePidArr" label="商品分类">
-          <el-cascader v-model="postForm.CatePidArr" :options="cateOptions" :props="{ expandTrigger: 'hover' }">
-          </el-cascader>
-        </el-form-item>
+      <el-form-item prop="CatePidArr" label="商品分类">
+        <el-cascader v-model="productForm.CatePidArr" :options="cateOptions" :props="{ expandTrigger: 'hover' }">
+        </el-cascader>
+      </el-form-item>
 
-        <el-form-item prop="BrandId" label="商品品牌">
-          <el-select v-model="postForm.BrandId" placeholder="请选择">
-            <el-option v-for="item in brandOptions" :key="item.value" :label="item.label" :value="item.value">
-            </el-option>
-          </el-select>
-        </el-form-item>
+      <el-form-item prop="BrandId" label="商品品牌">
+        <el-select v-model="productForm.BrandId" placeholder="请选择">
+          <el-option v-for="item in brandOptions" :key="item.value" :label="item.label" :value="item.value">
+          </el-option>
+        </el-select>
+      </el-form-item>
 
-        <el-form-item prop="Description" label="商品介绍">
-          <el-input v-model="postForm.Description" :rows="3" type="textarea" placeholder="请输入内容" />
-        </el-form-item>
+      <el-form-item prop="Description" label="商品介绍">
+        <el-input v-model="productForm.Description" :rows="3" type="textarea" placeholder="请输入内容" />
+      </el-form-item>
 
-        <el-form-item prop="PSN" label="商品货号">
-          <el-input v-model="postForm.PSN"></el-input>
-        </el-form-item>
+      <el-form-item prop="PSN" label="商品货号">
+        <el-input v-model="productForm.PSN"></el-input>
+      </el-form-item>
 
-        <el-form-item prop="ShopPrice" label="商品售价">
-          <el-input v-model="postForm.ShopPrice"></el-input>
-        </el-form-item>
+      <el-form-item prop="ShopPrice" label="商品售价">
+        <el-input v-model="productForm.ShopPrice"></el-input>
+      </el-form-item>
 
-        <el-form-item prop="MarketPrice" label="市场价格">
-          <el-input v-model="postForm.MarketPrice"></el-input>
-        </el-form-item>
+      <el-form-item prop="MarketPrice" label="市场价格">
+        <el-input v-model="productForm.MarketPrice"></el-input>
+      </el-form-item>
 
-        <el-form-item prop="CostPrice" label="成本价格">
-          <el-input v-model="postForm.CostPrice"></el-input>
-        </el-form-item>
+      <el-form-item prop="CostPrice" label="成本价格">
+        <el-input v-model="productForm.CostPrice"></el-input>
+      </el-form-item>
 
-        <el-form-item prop="Weight" label="商品重量">
-          <el-input v-model="postForm.Weight"></el-input>
-        </el-form-item>
+      <el-form-item prop="Weight" label="商品重量">
+        <el-input v-model="productForm.Weight"></el-input>
+      </el-form-item>
 
-        <el-form-item prop="OrderSort" label="排序">
-          <el-input v-model="postForm.OrderSort"></el-input>
-        </el-form-item>
-      </div>
+      <el-form-item prop="OrderSort" label="排序">
+        <el-input v-model="productForm.OrderSort"></el-input>
+      </el-form-item>
+
+      <el-form-item style="text-align: center">
+        <el-button type="primary" size="medium" @click="handleNext('productForm')">下一步，填写商品属性</el-button>
+      </el-form-item>
     </el-form>
   </div>
 </template>
 
 <script>
-import Upload from "@/components/Upload/SingleImage3";
-import Sticky from "@/components/Sticky"; // 粘性header组件
-import { validURL } from "@/utils/validate";
-import { fetchUser, addUser, updateUser } from "@/api/user";
-import { getRoles } from "@/api/role";
+import { fetchProduct, addProduct, updateProduct } from "@/api/product";
+import { getCategoryList } from "@/api/category";
+import { getBrandList } from "@/api/brand";
+import util from "@/utils/util.js";
 
 const defaultForm = {
-  LoginName: "",
-  RealName: "",
-  Password: "",
+  PSN: "",
+  Name: "",
+  CategoryId: null,
+  BrandId: null,
+  SKUGid: null,
+  ShopPrice: 0,
+  MarketPrice: 0,
+  CostPrice: 0,
   Status: 0,
-  Age: 0,
-  Sex: 0,
-  Birthday: "",
-  Address: "",
-  Avatar: "",
-  Remark: ""
+  Weight: 0,
+  Description: "",
+  OrderSort: 0
 };
 
 export default {
-  name: "UserDetail",
-  components: {
-    Upload,
-    Sticky
-  },
+  name: "ProductDetail",
   props: {
     isEdit: {
       type: Boolean,
@@ -84,144 +84,160 @@ export default {
   },
   data() {
     return {
-      title: '',
-      postForm: Object.assign({}, defaultForm),
+      productForm: Object.assign({}, defaultForm),
       loading: false,
-      roleIds: '',
-      roleList: [],
-      status: 0,
+      cateList: [],
+      cateOptions: [],
+      brandList: [],
+      brandOptions: [],
       rules: {
-        LoginName: [
-          { required: true, message: "请输入登录名", trigger: "blur" }
-        ]
-      },
-      tempRoute: {}
+        Name: [
+          { required: true, message: '请输入商品名称', trigger: 'blur' },
+          { min: 2, max: 140, message: '长度在 2 到 140 个字符', trigger: 'blur' }
+        ],
+        CategoryId: [{ required: true, message: '请选择商品分类', trigger: 'blur' }],
+        BrandId: [{ required: true, message: '请选择商品品牌', trigger: 'blur' }],
+        Description: [{ required: true, message: '请输入商品介绍', trigger: 'blur' }],
+        requiredProp: [{ required: true, message: '该项为必填项', trigger: 'blur' }]
+      }
     };
-  },
-  computed: {
-    lang() {
-      return this.$store.getters.language;
-    }
   },
   created() {
     if (this.isEdit) {
       const id = this.$route.params && this.$route.params.id;
       this.fetchData(id);
     }
-    this.getRoles();
-    // Why need to make a copy of this.$route here?
-    // Because if you enter this page and quickly switch tag, may be in the execution of the setTagsViewTitle function, this.$route is no longer pointing to the current page
-    // https://github.com/PanJiaChen/vue-element-admin/issues/1221
-    this.tempRoute = Object.assign({}, this.$route);
+    this.getCates();
+    this.getBrands();
   },
   methods: {
     fetchData(id) {
-      fetchUser(id).then(response => {
-        this.postForm = response.data.data;
-        this.status = this.postForm.Status == 0 ? false : true;
-        if (this.postForm.RoleIds) {
-          this.roleIds = this.postForm.RoleIds.split(',').map(t => {
-            return parseInt(t);
-          })
-        }
-        // set tagsview title
-        this.setTagsViewTitle();
-        // set page title
-        this.setPageTitle();
+      fetchProduct(id).then(response => {
+        this.productForm = response.data.data;
       }).catch(err => {
         console.log(err);
       });
     },
-    getRoles() {
-      getRoles({}).then(response => {
+    getCates() {//获取商品分类
+      let that = this;
+      let conditions = [{
+        Field: "IsDeleted",
+        DataType: util.query.dataType.boolean,
+        Option: util.query.opt.eq,
+        Value: false
+      }];
+
+      getCategoryList({
+        conditions: util.query.convert(conditions),
+        sorts: util.query.convert([])
+      }).then(response => {
         let { success, data } = response.data;
         if (success) {
-          this.roleList = data.map(t => {
-            return {
-              value: t.Id,
-              label: t.Name
-            }
+          that.cateOptions = [];
+          that.cateList = data.list;
+          let filterList = data.list.filter(t => {
+            return t.ParentID == 0;
           });
+
+          filterList.forEach((item, index) => {
+            let temp = {
+              value: item.Id,
+              label: item.Name,
+              children: []
+            }
+
+            that.cateOptions.push(temp);
+            that.groupCate(temp);
+          })
         } else {
-          this.$message({ message: '加载角色列表失败', type: 'error' });
+          that.$message({ message: '加载商品分类失败', type: 'error' });
         }
       })
     },
-    setTagsViewTitle() {
-      const title = this.lang === "zh" ? "编辑用户" : "Edit User";
-      const route = Object.assign({}, this.tempRoute, {
-        title: `${title}-${this.postForm.Id}`
-      });
-      this.$store.dispatch("tagsView/updateVisitedView", route);
-    },
-    setPageTitle() {
-      const title = "Edit User";
-      document.title = `${title} - ${this.postForm.Id}`;
-    },
-    submitForm() {
+    //递归
+    groupCate(parent) {
       let that = this;
-      console.log(that.postForm);
-      that.$refs.postForm.validate(valid => {
+      let list = [];
+
+      list = that.cateList.filter((t) => {
+        return t.ParentId == parent.Id;
+      });
+
+      list.forEach((item, index) => {
+        let temp = {
+          value: item.Id,
+          label: item.Name,
+          children: []
+        }
+
+        parent.children.push(temp);
+        that.groupCate(temp);
+      })
+    },
+    getBrands() {//获取商品品牌
+      let that = this;
+      let conditions = [{
+        Field: "IsDeleted",
+        DataType: util.query.dataType.boolean,
+        Option: util.query.opt.eq,
+        Value: false
+      }];
+
+      getBrandList({
+        conditions: util.query.convert(conditions),
+        sorts: util.query.convert([])
+      }).then(response => {
+        let { success, data } = response.data;
+        if (success) {
+          that.brandOptions = data.list.map(t => {
+            return { value: t.Id, label: t.Name }
+          })
+        }
+      })
+    },
+    handleNext(formName) {
+      let that = this;
+      that.$refs[formName].validate(valid => {
         if (valid) {
           that.loading = true;
           if (that.isEdit) {
-            updateUser(that.postForm).then(response => {
+            updateProduct(that.productForm).then(response => {
               let { success, msg } = response.data;
               if (success) {
-                that.$notify({
-                  title: "提示",
-                  message: "更新用户成功",
-                  type: "success",
-                  duration: 2000
-                });
-
-                setTimeout(function () {
-                  that.goBack();
-                }, 2000);
+                that.$emit('next');
               } else {
-                that.$notify({
-                  title: "提示",
+                that.$message({
                   message: msg,
                   type: "error",
-                  duration: 2000
+                  duration: 1000
                 });
+
+                return false;
               }
             }).catch(() => {
-              that.$notify({
-                title: "提示",
-                message: "更新用户失败",
+              that.$message({
+                message: "更新失败",
                 type: "error",
-                duration: 2000
+                duration: 1000
               });
             });
           } else {
-            addUser(that.postForm).then(response => {
+            addProduct(that.productForm).then(response => {
               let { success, msg } = response.data;
               if (success) {
-                that.$notify({
-                  title: "提示",
-                  message: "新增用户成功",
-                  type: "success",
-                  duration: 2000
-                });
-
-                setTimeout(function () {
-                  that.goBack();
-                }, 2000);
+                that.$emit('next');
               } else {
-                that.$notify({
-                  title: "提示",
+                that.$message({
                   message: msg,
                   type: "error",
-                  duration: 2000
+                  duration: 1000
                 });
               }
             }).catch(() => {
-              that.$notify({
-                title: "提示",
-                message: "新增用户失败",
+              that.$message({
+                message: "新增失败",
                 type: "error",
-                duration: 2000
+                duration: 1000
               });
             });
           }
@@ -231,49 +247,7 @@ export default {
           return false;
         }
       });
-    },
-    goBack() {
-      this.$router.push({ path: "/system/user/list" });
     }
   }
 };
 </script>
-
-<style lang="scss" scoped>
-@import "~@/styles/mixin.scss";
-
-.createPost-container {
-  position: relative;
-
-  .createPost-main-container {
-    padding: 40px 45px 20px 50px;
-
-    .postInfo-container {
-      position: relative;
-      @include clearfix;
-      margin-bottom: 10px;
-
-      .postInfo-container-item {
-        float: left;
-      }
-    }
-  }
-
-  .word-counter {
-    width: 40px;
-    position: absolute;
-    right: 10px;
-    top: 0px;
-  }
-}
-
-.user-textarea /deep/ {
-  textarea {
-    padding-right: 40px;
-    resize: none;
-    border: none;
-    border-radius: 0px;
-    border-bottom: 1px solid #bfcbd9;
-  }
-}
-</style>

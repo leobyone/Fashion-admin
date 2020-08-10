@@ -189,19 +189,17 @@ export default {
       deleteProduct(row.Id).then(response => {
         let { success, msg } = response.data;
         if (success) {
-          this.$notify({
-            title: '提示',
+          this.$message({
             message: '删除成功',
             type: 'success',
-            duration: 2000
+            duration: 1000
           })
           this.getList();
         } else {
-          this.$notify({
-            title: '提示',
+          this.$message({
             message: msg,
             type: 'error',
-            duration: 2000
+            duration: 1000
           })
         }
       })
@@ -214,19 +212,17 @@ export default {
       updateProduct(postForm).then(response => {
         let { success, msg } = response.data;
         if (!success) {
-          that.$notify({
-            title: "提示",
+          that.$message({
             message: msg,
             type: "error",
-            duration: 2000
+            duration: 1000
           });
         }
       }).catch(() => {
-        that.$notify({
-          title: "提示",
+        that.$message({
           message: "更新失败",
           type: "error",
-          duration: 2000
+          duration: 1000
         });
       });
     },
@@ -238,19 +234,17 @@ export default {
       updateProduct(postForm).then(response => {
         let { success, msg } = response.data;
         if (!success) {
-          that.$notify({
-            title: "提示",
+          that.$message({
             message: msg,
             type: "error",
-            duration: 2000
+            duration: 1000
           });
         }
       }).catch(() => {
-        that.$notify({
-          title: "提示",
+        that.$message({
           message: "更新失败",
           type: "error",
-          duration: 2000
+          duration: 1000
         });
       });
     },

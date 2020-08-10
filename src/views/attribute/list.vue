@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="attributeGroupName" :placeholder="$t('table.attributegroupname')" style="width: 200px;"
+      <el-input v-model="attributeName" :placeholder="$t('table.attributename')" style="width: 200px;"
         class="filter-item" @keyup.enter.native="handleFilter" />
       <el-button class="filter-item" type="primary" icon="el-icon-search" style="margin-left:10px;"
         @click="handleFilter">
@@ -17,35 +17,32 @@
         </template>
       </el-table-column>
 
-      <el-table-column min-width="200px" label="类型名称">
+      <el-table-column min-width="200px" label="属性名称">
         <template slot-scope="scope">
-          <router-link :to="'/attributeGroup/edit/' + scope.row.Id" class="link-type">
+          <router-link :to="'/attribute/edit/' + scope.row.Id" class="link-type">
             <span>{{ scope.row.Name }}</span>
           </router-link>
         </template>
       </el-table-column>
 
-      <el-table-column width="120px" align="center" label="属性数量">
+      <el-table-column align="center" label="属性组">
         <template slot-scope="scope">
-          {{ scope.row.AttrCount }}
+          {{ scope.row.AttributeGroupName }}
         </template>
       </el-table-column>
 
-      <el-table-column width="120px" align="center" label="参数数量">
+      <el-table-column align="center" label="属性是否可选">
         <template slot-scope="scope">
-          {{ scope.row.ParamCount }}
+          {{scope.row.SelectType|selectTypeFilter}}
         </template>
       </el-table-column>
 
-      <el-table-column width="120px" align="center" label="设置">
-        <template slot-scope="scope">
-          <router-link :to="'/attributeGroup/attrlist/' + scope.row.Id + '/type=0'">
-            <el-button size="mini">属性列表</el-button>
-          </router-link>
-          <router-link :to="'/attributeGroup/attrlist/' + scope.row.Id + '/type=1'">
-            <el-button size="mini">参数列表</el-button>
-          </router-link>
-        </template>
+      <el-table-column label="可选值列表" align="center">
+        <template slot-scope="scope">{{scope.row.Values}}</template>
+      </el-table-column>
+
+      <el-table-column label="排序" width="100" align="center">
+        <template slot-scope="scope">{{scope.row.OrderSort}}</template>
       </el-table-column>
 
       <el-table-column align="center" label="操作" width="200">
@@ -67,19 +64,19 @@
 </template>
 
 <script>
-import { fetchList, deleteAttributeGroup } from "@/api/attribute-group.js";
+import { fetchList, deleteAttribute } from "@/api/attribute.js";
 import util from "@/utils/util.js";
 import Pagination from "@/components/Pagination"; // Secondary package based on el-pagination
 
 export default {
-  name: "AttributeGroupList",
+  name: "AttributeList",
   components: { Pagination },
   data() {
     return {
       list: null,
       total: 0,
       listLoading: true,
-      attributeGroupName: "",
+      attributeName: "",
       listQuery: {
         page: 1,
         size: 20,
@@ -90,18 +87,40 @@ export default {
             DataType: util.query.dataType.boolean,
             Option: util.query.opt.eq,
             Value: false
+          },
+          {
+            Field: "ShowType",
+            DataType: util.query.dataType.int,
+            Option: util.query.opt.eq,
+            Value: this.$route.params.type
           }
         ])
       }
     };
   },
+  filters: {
+    selectTypeFilter(value) {
+      if (value === 1) {
+        return '单选';
+      } else if (value === 2) {
+        return '多选';
+      } else {
+        return '唯一'
+      }
+    }
+  },
   watch: {
-    attributeGroupName: function (newVal, oldVal) {
+    attributeName: function (newVal, oldVal) {
       let conditions = [{
         Field: "IsDeleted",
         DataType: util.query.dataType.boolean,
         Option: util.query.opt.eq,
         Value: false
+      }, {
+        Field: "ShowType",
+        DataType: util.query.dataType.int,
+        Option: util.query.opt.eq,
+        Value: this.$route.params.type
       }];
 
       if (newVal != "") {
@@ -138,13 +157,13 @@ export default {
       });
     },
     handleCreate() {
-      this.$router.push({ path: "/attributeGroup/create" });
+      this.$router.push({ path: "/attribute/create" });
     },
     handleEdit(row) {
-      this.$router.push({ path: `/attributeGroup/edit/${row.Id}` });
+      this.$router.push({ path: `/attribute/edit/${row.Id}` });
     },
     handleDelete(row) {
-      deleteAttributeGroup(row.Id).then(response => {
+      deleteAttribute(row.Id).then(response => {
         let { success, msg } = response.data;
         if (success) {
           this.$message({

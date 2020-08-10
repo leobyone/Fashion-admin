@@ -121,9 +121,7 @@ export default {
                   duration: 1000
                 });
 
-                setTimeout(function () {
-                  that.goBack();
-                }, 2000);
+                that.$router.back();
               } else {
                 that.$message({
                   message: msg,
@@ -149,9 +147,7 @@ export default {
                   duration: 1000
                 });
 
-                setTimeout(function () {
-                  that.goBack();
-                }, 2000);
+                that.$router.back();
               } else {
                 that.$message({
                   message: msg,
