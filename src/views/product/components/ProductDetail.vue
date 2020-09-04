@@ -15,6 +15,20 @@
 import ProductBaseInfo from './ProductBaseInfo';
 import ProductProperties from './ProductProperties';
 
+const defaultForm = {
+  Name: "",
+  CatePidArr: [],
+  BrandId: null,
+  Description: '',
+  PSN: '',
+  ShopPrice: 0,
+  MarketPrice: 0,
+  CostPrice: 0,
+  Weight: 0,
+  Unit: '',
+  OrderSort: 0
+};
+
 export default {
   name: "ProductDetail",
   components: {

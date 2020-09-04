@@ -42,6 +42,10 @@
         <el-input v-model="productForm.Weight"></el-input>
       </el-form-item>
 
+      <el-form-item label="计量单位：">
+        <el-input v-model="productForm.Unit"></el-input>
+      </el-form-item>
+
       <el-form-item prop="OrderSort" label="排序">
         <el-input v-model="productForm.OrderSort"></el-input>
       </el-form-item>

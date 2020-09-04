@@ -2,9 +2,8 @@
   <div style="margin-top: 50px">
     <el-form :model="value" ref="productAttrForm" label-width="120px" style="width: 720px" size="small">
       <el-form-item label="属性类型：">
-        <el-select v-model="value.productAttributeCategoryId" placeholder="请选择属性类型" @change="handleProductAttrChange">
-          <el-option v-for="item in productAttributeCategoryOptions" :key="item.value" :label="item.label"
-            :value="item.value">
+        <el-select v-model="value.AttributeGroupId" placeholder="请选择属性类型" @change="handleAttrGroupChange">
+          <el-option v-for="item in attributeGroupOptions" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-form-item>
@@ -12,7 +11,7 @@
         <el-card shadow="never" class="cardBg">
           <div v-for="(productAttr,idx) in selectProductAttr" :key="idx">
             {{productAttr.name}}：
-            <el-checkbox-group v-if="productAttr.handAddStatus===0" v-model="selectProductAttr[idx].values">
+            <el-checkbox-group v-if="productAttr.canManuallyAdd===0" v-model="selectProductAttr[idx].values">
               <el-checkbox v-for="item in getInputListArr(productAttr.inputList)" :label="item" :key="item"
                 class="littleMarginLeft"></el-checkbox>
             </el-checkbox-group>
@@ -113,8 +112,8 @@
 </template>
 
 <script>
-import { fetchList as fetchProductAttrCateList } from '@/api/productAttrCate'
-import { fetchList as fetchProductAttrList } from '@/api/productAttr'
+import { fetchList as fetchAttributeGroupList } from '@/api/attribute-group'
+import { fetchList as fetchAttributeList } from '@/api/attribute'
 import SingleUpload from '@/components/Upload/singleUpload'
 import MultiUpload from '@/components/Upload/multiUpload'
 import Tinymce from '@/components/Tinymce'
@@ -133,7 +132,7 @@ export default {
       //编辑模式时是否初始化成功
       hasEditCreated: false,
       //商品属性分类下拉选项
-      productAttributeCategoryOptions: [],
+      attributeGroupOptions: [],
       //选中的商品属性
       selectProductAttr: [],
       //选中的商品参数
@@ -156,7 +155,7 @@ export default {
     },
     //商品的编号
     productId() {
-      return this.value.id;
+      return this.value.Id;
     },
     //商品的主图和画册图片
     selectProductPics: {
@@ -195,7 +194,7 @@ export default {
     }
   },
   created() {
-    this.getProductAttrCateList();
+    this.getAttributeGroupList();
   },
   watch: {
     productId: function (newValue) {
@@ -208,24 +207,24 @@ export default {
   methods: {
     handleEditCreated() {
       //根据商品属性分类id获取属性和参数
-      if (this.value.productAttributeCategoryId != null) {
-        this.handleProductAttrChange(this.value.productAttributeCategoryId);
+      if (this.value.AttributeGroupId != null) {
+        this.handleAttrGroupChange(this.value.AttributeGroupId);
       }
       this.hasEditCreated = true;
     },
-    getProductAttrCateList() {
+    getAttributeGroupList() {
       let param = { pageNum: 1, pageSize: 100 };
-      fetchProductAttrCateList(param).then(response => {
-        this.productAttributeCategoryOptions = [];
+      fetchAttributeGroupList(param).then(response => {
+        this.attributeGroupOptions = [];
         let list = response.data.list;
         for (let i = 0; i < list.length; i++) {
-          this.productAttributeCategoryOptions.push({ label: list[i].name, value: list[i].id });
+          this.attributeGroupOptions.push({ label: list[i].name, value: list[i].id });
         }
       });
     },
     getProductAttrList(type, cid) {
       let param = { pageNum: 1, pageSize: 100, type: type };
-      fetchProductAttrList(cid, param).then(response => {
+      fetchAttributeList(cid, param).then(response => {
         let list = response.data.list;
         if (type === 0) {
           this.selectProductAttr = [];
@@ -233,7 +232,7 @@ export default {
             let options = [];
             let values = [];
             if (this.isEdit) {
-              if (list[i].handAddStatus === 1) {
+              if (list[i].canManuallyAdd === 1) {
                 //编辑状态下获取手动添加编辑属性
                 options = this.getEditAttrOptions(list[i].id);
               }
@@ -243,7 +242,7 @@ export default {
             this.selectProductAttr.push({
               id: list[i].id,
               name: list[i].name,
-              handAddStatus: list[i].handAddStatus,
+              canManuallyAdd: list[i].canManuallyAdd,
               inputList: list[i].inputList,
               values: values,
               options: options
@@ -275,8 +274,8 @@ export default {
     //获取设置的可手动添加属性值
     getEditAttrOptions(id) {
       let options = [];
-      for (let i = 0; i < this.value.productAttributeValueList.length; i++) {
-        let attrValue = this.value.productAttributeValueList[i];
+      for (let i = 0; i < this.value.AttributeValueList.length; i++) {
+        let attrValue = this.value.AttributeValueList[i];
         if (attrValue.productAttributeId === id) {
           let strArr = attrValue.value.split(',');
           for (let j = 0; j < strArr.length; j++) {
@@ -319,13 +318,13 @@ export default {
     },
     //获取属性的值
     getEditParamValue(id) {
-      for (let i = 0; i < this.value.productAttributeValueList.length; i++) {
-        if (id === this.value.productAttributeValueList[i].productAttributeId) {
-          return this.value.productAttributeValueList[i].value;
+      for (let i = 0; i < this.value.AttributeValueList.length; i++) {
+        if (id === this.value.AttributeValueList[i].productAttributeId) {
+          return this.value.AttributeValueList[i].value;
         }
       }
     },
-    handleProductAttrChange(value) {
+    handleAttrGroupChange(value) {
       this.getProductAttrList(0, value);
       this.getProductAttrList(1, value);
     },
@@ -502,11 +501,11 @@ export default {
     },
     //合并商品属性
     mergeProductAttrValue() {
-      this.value.productAttributeValueList = [];
+      this.value.AttributeValueList = [];
       for (let i = 0; i < this.selectProductAttr.length; i++) {
         let attr = this.selectProductAttr[i];
-        if (attr.handAddStatus === 1 && attr.options != null && attr.options.length > 0) {
-          this.value.productAttributeValueList.push({
+        if (attr.canManuallyAdd === 1 && attr.options != null && attr.options.length > 0) {
+          this.value.AttributeValueList.push({
             productAttributeId: attr.id,
             value: this.getOptionStr(attr.options)
           });
@@ -514,7 +513,7 @@ export default {
       }
       for (let i = 0; i < this.selectProductParam.length; i++) {
         let param = this.selectProductParam[i];
-        this.value.productAttributeValueList.push({
+        this.value.AttributeValueList.push({
           productAttributeId: param.id,
           value: param.value
         });
